@@ -1,7 +1,7 @@
 {
-  "name": "Subagent Work View",
-  "short_name": "Subagent",
-  "description": "Progressive Web App for Subagent Work View",
+  "name": "Live Agents - Real-Time AI Agent Management",
+  "short_name": "Live Agents",
+  "description": "Monitor and manage AI agent teams in real-time. Track tasks, visualize workflows, and collaborate with autonomous agents efficiently.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -39,6 +39,6 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "utilities", "business"],
   "screenshots": []
 }
