@@ -291,7 +291,11 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error("App Error:", error, errorInfo);
+      }}
+    >
       <Toaster
         position="top-right"
         expand={false}
