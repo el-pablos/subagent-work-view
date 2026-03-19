@@ -1,5 +1,6 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useId } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "../../lib/utils";
 import type { AgentStatus } from "./types";
 
 interface AgentStatusRingProps {
@@ -8,22 +9,43 @@ interface AgentStatusRingProps {
   className?: string;
 }
 
-const statusColors: Record<AgentStatus, { ring: string; glow: string }> = {
+const statusColors: Record<
+  AgentStatus,
+  {
+    from: string;
+    to: string;
+    accent: string;
+    glow: string;
+    track: string;
+  }
+> = {
   idle: {
-    ring: "stroke-slate-400",
-    glow: "drop-shadow-none",
+    from: "#64748b",
+    to: "#94a3b8",
+    accent: "#94a3b8",
+    glow: "drop-shadow-[0_0_10px_rgba(100,116,139,0.22)]",
+    track: "#1f2937",
   },
   busy: {
-    ring: "stroke-emerald-500",
-    glow: "drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]",
+    from: "#06b6d4",
+    to: "#2dd4bf",
+    accent: "#67e8f9",
+    glow: "drop-shadow-[0_0_14px_rgba(34,211,238,0.42)]",
+    track: "#0f172a",
   },
   communicating: {
-    ring: "stroke-sky-500",
-    glow: "drop-shadow-[0_0_8px_rgba(14,165,233,0.6)]",
+    from: "#8b5cf6",
+    to: "#d946ef",
+    accent: "#c084fc",
+    glow: "drop-shadow-[0_0_14px_rgba(192,132,252,0.42)]",
+    track: "#111827",
   },
   error: {
-    ring: "stroke-rose-500",
-    glow: "drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]",
+    from: "#f43f5e",
+    to: "#fb7185",
+    accent: "#fda4af",
+    glow: "drop-shadow-[0_0_12px_rgba(244,63,94,0.35)]",
+    track: "#111827",
   },
 };
 
@@ -32,90 +54,120 @@ const AgentStatusRing: React.FC<AgentStatusRingProps> = ({
   size = 64,
   className = "",
 }) => {
-  const { ring, glow } = statusColors[status];
+  const shouldReduceMotion = useReducedMotion();
+  const gradientId = useId().replace(/:/g, "");
+  const { from, to, accent, glow, track } = statusColors[status];
   const strokeWidth = 3;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
+  const isBusy = status === "busy";
+  const isCommunicating = status === "communicating";
+  const strokeDasharray =
+    status === "idle"
+      ? `${circumference}`
+      : `${circumference * 0.76} ${circumference * 0.24}`;
 
-  const isPulsing = status === "busy" || status === "communicating";
+  const ringAnimation = shouldReduceMotion
+    ? {}
+    : isBusy
+      ? {
+          rotate: 360,
+        }
+      : isCommunicating
+        ? {
+            scale: [1, 1.03, 1],
+            opacity: [0.92, 1, 0.92],
+          }
+        : {
+            opacity: [0.85, 1, 0.85],
+          };
+
+  const ringTransition = shouldReduceMotion
+    ? {}
+    : isBusy
+      ? {
+          duration: 2.2,
+          repeat: Infinity,
+          ease: "linear" as const,
+        }
+      : isCommunicating
+        ? {
+            duration: 1.8,
+            repeat: Infinity,
+            ease: "easeInOut" as const,
+          }
+        : {
+            duration: 2.6,
+            repeat: Infinity,
+            ease: "easeInOut" as const,
+          };
 
   return (
     <svg
       width={size}
       height={size}
-      className={`${glow} ${className}`}
-      style={{ position: "absolute", top: 0, left: 0 }}
+      viewBox={`0 0 ${size} ${size}`}
+      className={cn("absolute left-0 top-0 overflow-visible", glow, className)}
+      aria-hidden="true"
     >
-      {/* Background ring */}
+      <defs>
+        <linearGradient
+          id={`${gradientId}-ring`}
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop offset="0%" stopColor={from} />
+          <stop offset="100%" stopColor={to} />
+        </linearGradient>
+      </defs>
+
       <circle
         cx={center}
         cy={center}
         r={radius}
         fill="none"
+        stroke={track}
         strokeWidth={strokeWidth}
-        className="stroke-gray-700"
+        opacity={0.9}
       />
 
-      {/* Animated status ring */}
       <motion.circle
         cx={center}
         cy={center}
         r={radius}
         fill="none"
+        stroke={`url(#${gradientId}-ring)`}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
-        className={ring}
-        strokeDasharray={circumference}
-        strokeDashoffset={0}
-        initial={{ rotate: 0 }}
-        animate={
-          isPulsing
-            ? {
-                rotate: 360,
-                strokeDashoffset: [0, circumference * 0.25, 0],
-              }
-            : {}
-        }
-        transition={
-          isPulsing
-            ? {
-                rotate: {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear",
-                },
-                strokeDashoffset: {
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                },
-              }
-            : {}
-        }
-        style={{ transformOrigin: "center" }}
+        strokeDasharray={strokeDasharray}
+        initial={false}
+        animate={ringAnimation}
+        transition={ringTransition}
+        style={{ transformOrigin: "50% 50%" }}
       />
 
-      {/* Pulse effect for busy/communicating */}
-      {isPulsing && (
+      {isCommunicating && !shouldReduceMotion && (
         <motion.circle
           cx={center}
           cy={center}
-          r={radius}
+          r={radius + 1.5}
           fill="none"
-          strokeWidth={1}
-          className={ring}
-          initial={{ opacity: 0.6, scale: 1 }}
+          stroke={accent}
+          strokeWidth={1.25}
+          initial={false}
           animate={{
-            opacity: [0.6, 0],
-            scale: [1, 1.3],
+            opacity: [0.45, 0, 0.45],
+            scale: [1, 1.12, 1],
           }}
           transition={{
-            duration: 1.5,
+            duration: 1.8,
             repeat: Infinity,
             ease: "easeOut",
           }}
-          style={{ transformOrigin: "center" }}
+          style={{ transformOrigin: "50% 50%" }}
         />
       )}
     </svg>
