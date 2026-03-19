@@ -1,14 +1,11 @@
 {
-  "name": "SubAgent Work View - War Room Dashboard",
+  "name": "SubAgent Work View",
   "short_name": "AgentView",
-  "description": "Realtime AI Sub-Agent Monitoring Dashboard",
+  "description": "War Room Dashboard - Realtime AI Agent Monitoring",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "categories": ["developer tools", "productivity"],
-  "lang": "en",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -18,8 +15,7 @@
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

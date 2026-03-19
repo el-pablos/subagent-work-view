@@ -74,6 +74,37 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    target: "es2020",
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("react") || id.includes("react-dom")) {
+            return "react-vendor";
+          }
+
+          if (id.includes("framer-motion")) {
+            return "framer-motion";
+          }
+
+          if (id.includes("zustand") || id.includes("immer")) {
+            return "state";
+          }
+
+          if (id.includes("laravel-echo") || id.includes("pusher-js")) {
+            return "comms";
+          }
+
+          return undefined;
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "framer-motion"],
+  },
   server: {
     port: 5173,
     proxy: {

@@ -8,14 +8,56 @@
     @apply border-border;
   }
 
+  :root {
+    /* Glass effect tokens */
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(148, 163, 184, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-blur: 16px;
+
+    /* Panel backgrounds */
+    --panel-bg: rgba(15, 23, 42, 0.8);
+    --panel-border: rgba(51, 65, 85, 0.5);
+    --panel-hover: rgba(30, 41, 59, 0.8);
+
+    /* Status colors */
+    --status-active: #22d3ee;
+    --status-busy: #f59e0b;
+    --status-idle: #6b7280;
+    --status-error: #ef4444;
+    --status-success: #10b981;
+
+    /* Source badge colors */
+    --source-claude: #6366f1;
+    --source-openclaw: #10b981;
+    --source-unknown: #6b7280;
+
+    /* Glow effects */
+    --glow-cyan: 0 0 20px rgba(34, 211, 238, 0.3);
+    --glow-purple: 0 0 20px rgba(168, 85, 247, 0.3);
+
+    /* Noise texture */
+    --noise-opacity: 0.03;
+  }
+
   body {
     @apply bg-slate-950 text-slate-100 antialiased;
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     margin: 0;
     padding: 0;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: "JetBrains Mono", "Fira Code", monospace;
   }
 
   #root {
@@ -47,9 +89,54 @@
 }
 
 @layer utilities {
-  /* Glass panel effect - Vercel/Linear style */
   .glass-panel {
-    @apply backdrop-blur-xl bg-opacity-95;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-panel-solid {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+  }
+
+  .glow-border {
+    position: relative;
+  }
+
+  .glow-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.2),
+      rgba(168, 85, 247, 0.2),
+      rgba(34, 211, 238, 0.1)
+    );
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .glow-border:hover::before {
+    opacity: 1;
+  }
+
+  .noise-overlay {
+    position: relative;
+  }
+
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
   }
 
   /* Safe area padding for mobile devices */
