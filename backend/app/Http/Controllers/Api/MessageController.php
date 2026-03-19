@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
+use App\Jobs\BatchStoreMessages;
 use App\Models\Message;
 use App\Models\Session;
 use App\Events\MessageCreated;
