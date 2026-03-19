@@ -392,10 +392,13 @@ jobs:
           echo "Add your deployment script here"
           # Example: ssh deploy@server 'cd /app && docker compose pull && docker compose up -d'
 
+  # ============================================
+  # Release (Main branch only)
+  # ============================================
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-build, docker-build]
+    needs: [backend-tests, frontend-build, docker-build, e2e-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
