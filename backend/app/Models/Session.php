@@ -14,6 +14,8 @@ class Session extends Model
 {
     use HasFactory;
 
+    protected $table = 'agent_sessions';
+
     protected $fillable = [
         'uuid',
         'command_source',

@@ -1,9 +1,16 @@
-import React from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import type { TaskHistoryEvent } from "../../types/task";
+import {
+  useDashboardWebSocket,
+  type TaskUpdatedEvent,
+} from "../../hooks/useWebSocket";
 
 interface TaskTimelineProps {
   events: TaskHistoryEvent[];
+  taskId?: string; // Optional: for realtime updates to specific task
   className?: string;
+  autoScroll?: boolean; // Auto-scroll to latest event
+  onEventUpdate?: (events: TaskHistoryEvent[]) => void; // Callback for realtime updates
 }
 
 const getEventIcon = (type: TaskHistoryEvent["type"]): string => {

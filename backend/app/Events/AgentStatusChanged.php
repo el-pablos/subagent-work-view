@@ -18,8 +18,8 @@ class AgentStatusChanged implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('dashboard.global'),
-            new Channel('agent.' . $this->agent->id),
+            new Channel('agents'),
+            new Channel('agents.' . $this->agent->id),
         ];
     }
 

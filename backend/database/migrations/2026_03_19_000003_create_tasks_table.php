@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('session_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('session_id')->constrained('agent_sessions')->cascadeOnDelete();
             $table->string('title', 255);
             $table->text('description')->nullable();
             $table->string('status', 30)->default('pending');

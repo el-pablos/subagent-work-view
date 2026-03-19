@@ -8,6 +8,11 @@ import React, {
 import MessageBubble from "./MessageBubble";
 import MessageFilter from "./MessageFilter";
 import { Message, MessageChannel, Agent } from "./types";
+import {
+  useSessionWebSocket,
+  useWebSocketConnection,
+  type MessageCreatedEvent,
+} from "../../hooks/useWebSocket";
 
 interface CommunicationLogPanelProps {
   sessionId: string;
@@ -15,7 +20,7 @@ interface CommunicationLogPanelProps {
   agents: Agent[];
   onSendCommand?: (command: string) => void;
   onSubscribe?: (sessionId: string) => () => void;
-  isConnected?: boolean;
+  onMessageReceived?: (message: Message) => void;
   showFilter?: boolean;
   className?: string;
 }
@@ -36,7 +41,7 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
   agents,
   onSendCommand: _onSendCommand,
   onSubscribe,
-  isConnected = true,
+  onMessageReceived,
   showFilter = true,
   className = "",
 }) => {
@@ -46,9 +51,42 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
     MessageChannel | "all"
   >("all");
   const [autoScroll, setAutoScroll] = useState(true);
+  const [typingAgents, setTypingAgents] = useState<Set<string>>(new Set());
+  const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // WebSocket connection state
+  const connectionState = useWebSocketConnection();
+  const isConnected = connectionState === "connected";
+
+  // Handle new message from WebSocket
+  const handleMessageCreated = useCallback(
+    (event: MessageCreatedEvent) => {
+      // Track new message for animation
+      setNewMessageIds((prev) => new Set([...prev, event.message.id]));
+
+      // Clear animation flag after animation completes
+      setTimeout(() => {
+        setNewMessageIds((prev) => {
+          const next = new Set(prev);
+          next.delete(event.message.id);
+          return next;
+        });
+      }, 500);
+
+      // Notify parent component
+      onMessageReceived?.(event.message as unknown as Message);
+    },
+    [onMessageReceived]
+  );
+
+  // Subscribe to WebSocket for realtime messages
+  useSessionWebSocket({
+    sessionId,
+    onMessageCreated: handleMessageCreated,
+  });
 
   // Subscribe to session messages on mount
   useEffect(() => {

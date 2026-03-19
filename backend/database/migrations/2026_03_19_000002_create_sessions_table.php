@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sessions', function (Blueprint $table) {
+        Schema::create('agent_sessions', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('command_source', 50);
@@ -27,6 +27,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('agent_sessions');
     }
 };

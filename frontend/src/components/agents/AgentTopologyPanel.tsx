@@ -5,28 +5,125 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Network } from "lucide-react";
 import type { Agent, AgentConnection, AgentNodePosition } from "./types";
 import AgentNode from "./AgentNode";
+import { echo } from "../../services/websocket";
+
+// WebSocket event types for agents channel
+interface AgentSpawnedEvent {
+  agent: Agent;
+}
+
+interface AgentTerminatedEvent {
+  agentId: string;
+}
+
+interface AgentStatusUpdatedEvent {
+  agentId: string;
+  status: Agent["status"];
+  currentTask?: Agent["currentTask"];
+}
 
 interface AgentTopologyPanelProps {
   agents: Agent[];
   connections?: AgentConnection[];
   selectedAgentId?: string;
   onAgentSelect?: (agent: Agent) => void;
+  onAgentsChange?: (agents: Agent[]) => void;
   className?: string;
 }
 
 const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
-  agents,
+  agents: initialAgents,
   connections = [],
   selectedAgentId,
   onAgentSelect,
+  onAgentsChange,
   className = "",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  const [recentlyChangedIds, setRecentlyChangedIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  // Sync with external agents prop
+  useEffect(() => {
+    setAgents(initialAgents);
+  }, [initialAgents]);
+
+  // Notify parent of agent changes
+  useEffect(() => {
+    onAgentsChange?.(agents);
+  }, [agents, onAgentsChange]);
+
+  // Subscribe to WebSocket agents channel for realtime updates
+  useEffect(() => {
+    const channel = echo.channel("agents");
+
+    // Handle new agent spawn
+    channel.listen(".agent.spawned", (event: AgentSpawnedEvent) => {
+      console.log("[WS] Agent spawned:", event);
+      setAgents((prev) => {
+        // Check if agent already exists
+        if (prev.some((a) => a.id === event.agent.id)) {
+          return prev;
+        }
+        return [...prev, event.agent];
+      });
+      // Mark as recently changed for animation
+      setRecentlyChangedIds((prev) => new Set(prev).add(event.agent.id));
+      setTimeout(() => {
+        setRecentlyChangedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(event.agent.id);
+          return next;
+        });
+      }, 2000);
+    });
+
+    // Handle agent termination
+    channel.listen(".agent.terminated", (event: AgentTerminatedEvent) => {
+      console.log("[WS] Agent terminated:", event);
+      setAgents((prev) => prev.filter((a) => a.id !== event.agentId));
+    });
+
+    // Handle agent status update
+    channel.listen(
+      ".agent.status_updated",
+      (event: AgentStatusUpdatedEvent) => {
+        console.log("[WS] Agent status updated:", event);
+        setAgents((prev) =>
+          prev.map((agent) =>
+            agent.id === event.agentId
+              ? {
+                  ...agent,
+                  status: event.status,
+                  currentTask: event.currentTask ?? agent.currentTask,
+                }
+              : agent,
+          ),
+        );
+        // Mark as recently changed for pulse animation
+        setRecentlyChangedIds((prev) => new Set(prev).add(event.agentId));
+        setTimeout(() => {
+          setRecentlyChangedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(event.agentId);
+            return next;
+          });
+        }, 1500);
+      },
+    );
+
+    // Cleanup on unmount
+    return () => {
+      echo.leave("agents");
+    };
+  }, []);
 
   // Update container size on mount and resize
   useEffect(() => {

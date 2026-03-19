@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import CommandHistory from "./CommandHistory";
-import { CommandEntry, CommandSuggestion, CommandStatus } from "./types";
+import { CommandEntry, CommandSuggestion } from "./types";
 
 interface CommandConsoleProps {
   onSubmit: (

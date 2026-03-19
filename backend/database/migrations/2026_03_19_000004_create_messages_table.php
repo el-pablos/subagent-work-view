@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('session_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('session_id')->constrained('agent_sessions')->cascadeOnDelete();
             $table->foreignId('from_agent_id')->nullable()->constrained('agents')->nullOnDelete();
             $table->foreignId('to_agent_id')->nullable()->constrained('agents')->nullOnDelete();
             $table->longText('content');

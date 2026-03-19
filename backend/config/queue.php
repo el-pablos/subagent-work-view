@@ -72,6 +72,25 @@ return [
             'after_commit' => false,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | High-Throughput Redis Connection for Claude Events
+        |--------------------------------------------------------------------------
+        |
+        | Optimized Redis queue connection for processing Claude webhook events
+        | with high throughput. Uses shorter retry times and blocking for
+        | faster job pickup.
+        |
+        */
+        'redis-high-throughput' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => env('REDIS_QUEUE', 'claude-events'),
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 60),
+            'block_for' => 3,
+            'after_commit' => true,
+        ],
+
     ],
 
     /*

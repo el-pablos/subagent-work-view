@@ -93,4 +93,41 @@ class Agent extends Model
     {
         return $query->where('type', $type);
     }
+
+    /**
+     * Scope a query to only include online agents.
+     * Online = agents that have sent heartbeat in last 30 seconds
+     */
+    public function scopeWhereOnline($query)
+    {
+        return $query->where('last_seen_at', '>=', now()->subSeconds(30))
+                     ->where('status', '!=', AgentStatus::OFFLINE);
+    }
+
+    /**
+     * Scope a query to only include offline agents.
+     * Offline = no heartbeat in last 30 seconds OR status is OFFLINE
+     */
+    public function scopeWhereOffline($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('last_seen_at', '<', now()->subSeconds(30))
+              ->orWhereNull('last_seen_at')
+              ->orWhere('status', AgentStatus::OFFLINE);
+        });
+    }
+
+    /**
+     * Accessor to check if agent is currently online.
+     * Online = heartbeat received within last 30 seconds
+     */
+    public function getIsOnlineAttribute(): bool
+    {
+        if (!$this->last_seen_at) {
+            return false;
+        }
+
+        return $this->last_seen_at->greaterThan(now()->subSeconds(30))
+            && $this->status !== AgentStatus::OFFLINE;
+    }
 }

@@ -8,14 +8,31 @@ import {
 import type { Agent, Task, Session, Message } from "../types";
 
 // Event payload types
+export interface AgentSpawnedEvent {
+  agent: Agent;
+  session_id?: number;
+}
+
 export interface AgentStatusChangedEvent {
   agent: Agent;
   previousStatus: Agent["status"];
 }
 
+export interface AgentTerminatedEvent {
+  agent: Agent;
+  reason?: string;
+  session_id?: number;
+}
+
 export interface TaskUpdatedEvent {
   task: Task;
   previousStatus?: Task["status"];
+}
+
+export interface TaskProgressUpdatedEvent {
+  task: Task;
+  progress: number;
+  previousProgress: number;
 }
 
 export interface SessionUpdatedEvent {
@@ -32,9 +49,12 @@ const sessionChannel = (sessionId: number | string) => `session.${sessionId}`;
 
 // Event names
 export const WS_EVENTS = {
+  AGENT_SPAWNED: "agent.spawned",
   AGENT_STATUS_CHANGED: "agent.status_changed",
+  AGENT_TERMINATED: "agent.terminated",
   TASK_UPDATED: "task.updated",
   TASK_CREATED: "task.created",
+  TASK_PROGRESS_UPDATED: "task.progress_updated",
   SESSION_UPDATED: "session.updated",
   MESSAGE_CREATED: "message.created",
 } as const;
@@ -56,9 +76,12 @@ export function useWebSocketConnection() {
 // ==================== Dashboard Channel Hook ====================
 
 export interface UseDashboardWebSocketOptions {
+  onAgentSpawned?: (event: AgentSpawnedEvent) => void;
   onAgentStatusChanged?: (event: AgentStatusChangedEvent) => void;
+  onAgentTerminated?: (event: AgentTerminatedEvent) => void;
   onTaskUpdated?: (event: TaskUpdatedEvent) => void;
   onTaskCreated?: (event: TaskUpdatedEvent) => void;
+  onTaskProgressUpdated?: (event: TaskProgressUpdatedEvent) => void;
   onSessionUpdated?: (event: SessionUpdatedEvent) => void;
 }
 

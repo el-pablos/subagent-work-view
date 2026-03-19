@@ -5,7 +5,7 @@
  * with WebSocket for real-time message updates.
  */
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { CommunicationLogPanel, Message, Agent } from "./index";
 
 // Example: WebSocket connection for real-time updates
