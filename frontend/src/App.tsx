@@ -1,5 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from "react";
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "./components/common";
 import type { ConnectionStatus } from "./components/layout/Header";
 import type { Agent, AgentConnection } from "./components/agents/types";
 import type { Task, TaskHistoryEvent } from "./types/task";
