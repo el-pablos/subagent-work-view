@@ -25,52 +25,61 @@ const initialState: AgentState = {
 };
 
 export const useAgentStore = create<AgentState & AgentActions>()(
-  immer((set, get) => ({
-    ...initialState,
+  persist(
+    immer((set, get) => ({
+      ...initialState,
 
-    setAgents: (agents) =>
-      set((state) => {
-        state.agents = {};
-        agents.forEach((agent) => {
+      setAgents: (agents) =>
+        set((state) => {
+          state.agents = {};
+          agents.forEach((agent) => {
+            state.agents[agent.id] = agent;
+          });
+        }),
+
+      updateAgent: (agent) =>
+        set((state) => {
           state.agents[agent.id] = agent;
-        });
-      }),
+        }),
 
-    updateAgent: (agent) =>
-      set((state) => {
-        state.agents[agent.id] = agent;
-      }),
+      updateAgentPartial: (id, updates) =>
+        set((state) => {
+          if (state.agents[id]) {
+            state.agents[id] = { ...state.agents[id], ...updates };
+          }
+        }),
 
-    updateAgentPartial: (id, updates) =>
-      set((state) => {
-        if (state.agents[id]) {
-          state.agents[id] = { ...state.agents[id], ...updates };
-        }
-      }),
+      selectAgent: (id) =>
+        set((state) => {
+          state.selectedAgentId = id;
+        }),
 
-    selectAgent: (id) =>
-      set((state) => {
-        state.selectedAgentId = id;
-      }),
+      getAgentsByStatus: (status) => {
+        const state = get();
+        return Object.values(state.agents).filter(
+          (agent) => agent.status === status,
+        );
+      },
 
-    getAgentsByStatus: (status) => {
-      const state = get();
-      return Object.values(state.agents).filter(
-        (agent) => agent.status === status,
-      );
+      getAgent: (id) => {
+        const state = get();
+        return state.agents[id];
+      },
+
+      clearAgents: () =>
+        set((state) => {
+          state.agents = {};
+          state.selectedAgentId = null;
+        }),
+    })),
+    {
+      name: "agent-storage",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        selectedAgentId: state.selectedAgentId,
+      }),
     },
-
-    getAgent: (id) => {
-      const state = get();
-      return state.agents[id];
-    },
-
-    clearAgents: () =>
-      set((state) => {
-        state.agents = {};
-        state.selectedAgentId = null;
-      }),
-  })),
+  ),
 );
 
 // Selectors for optimized re-renders
