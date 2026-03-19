@@ -34,18 +34,19 @@ class MessageController extends Controller
             'channel' => 'nullable|string|max:100',
         ]);
 
-        $message = $session->messages()->create([
-            ...$validated,
-            'timestamp' => now(),
+        // Queue message for batch processing
+        BatchStoreMessages::queueMessage([
+            'session_id' => $session->id,
+            'from_agent_id' => $validated['from_agent_id'] ?? null,
+            'to_agent_id' => $validated['to_agent_id'] ?? null,
+            'content' => $validated['content'],
+            'message_type' => $validated['message_type'],
+            'channel' => $validated['channel'] ?? 'general',
         ]);
 
-        $message->load(['fromAgent', 'toAgent']);
-
-        broadcast(new MessageCreated($message));
-
         return response()->json([
-            'message' => 'Message created successfully',
-            'data' => new MessageResource($message),
-        ], 201);
+            'message' => 'Message queued successfully',
+            'pending_count' => BatchStoreMessages::pendingCount(),
+        ], 202);
     }
 }
