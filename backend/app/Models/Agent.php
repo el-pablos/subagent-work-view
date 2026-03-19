@@ -4,9 +4,13 @@ namespace App\Models;
 
 use App\Enums\AgentStatus;
 use App\Enums\AgentType;
+use App\Enums\TaskStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -19,6 +23,8 @@ class Agent extends Model
         'name',
         'type',
         'status',
+        'source',
+        'external_id',
         'current_task',
         'avatar',
         'capacity',
@@ -48,6 +54,25 @@ class Agent extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_agent_id');
+    }
+
+    public function latestTask(): HasOne
+    {
+        return $this->hasOne(Task::class, 'assigned_agent_id')
+            ->ofMany('created_at', 'max', function (Builder $query) {
+                $query->whereIn('status', [
+                    TaskStatus::ASSIGNED,
+                    TaskStatus::RUNNING,
+                    TaskStatus::BLOCKED,
+                ]);
+            });
+    }
+
+    public function sessions(): BelongsToMany
+    {
+        return $this->belongsToMany(Session::class, 'tasks', 'assigned_agent_id', 'session_id')
+            ->whereNotNull('tasks.assigned_agent_id')
+            ->distinct();
     }
 
     public function sentMessages(): HasMany
@@ -92,5 +117,18 @@ class Agent extends Model
     public function scopeByType($query, string $type)
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Scope a query to include frequently accessed relations.
+     */
+    public function scopeWithRelations(Builder $query): Builder
+    {
+        return $query->with([
+            'latestTask.session',
+            'sessions' => fn (Builder $relationQuery) => $relationQuery
+                ->select('sessions.id', 'sessions.uuid', 'sessions.command_source', 'sessions.status')
+                ->orderByDesc('sessions.created_at'),
+        ]);
     }
 }

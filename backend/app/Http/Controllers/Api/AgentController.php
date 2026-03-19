@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\AgentStatus;
+use App\Enums\AgentType;
+use App\Events\AgentCreated;
+use App\Events\AgentStatusChanged;
+use App\Events\MessageCreated;
+use App\Events\TaskCompleted;
+use App\Events\TaskUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AgentResource;
 use App\Models\Agent;
-use App\Enums\AgentStatus;
-use App\Enums\AgentType;
+use App\Models\Message;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,12 +26,13 @@ class AgentController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $agents = Agent::query()
-            ->when($request->type, fn($q, $type) => $q->where('type', $type))
-            ->when($request->status, fn($q, $status) => $q->where('status', $status))
-            ->when($request->has('available'), fn($q) => $q->where('status', AgentStatus::IDLE))
+            ->withRelations()
+            ->when($request->type, fn ($q, $type) => $q->where('type', $type))
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->when($request->has('available'), fn ($q) => $q->where('status', AgentStatus::IDLE))
             ->orderBy('priority', 'desc')
             ->orderBy('name')
-            ->paginate($request->per_page ?? 50);
+            ->paginate($request->integer('per_page', 50));
 
         return AgentResource::collection($agents);
     }
@@ -38,6 +45,8 @@ class AgentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => ['required', new Enum(AgentType::class)],
+            'source' => 'sometimes|string|max:100',
+            'external_id' => 'sometimes|nullable|string|max:255',
             'avatar' => 'nullable|string|max:255',
             'capacity' => 'nullable|integer|min:1|max:100',
             'priority' => 'nullable|integer|min:0|max:100',
@@ -49,11 +58,17 @@ class AgentController extends Controller
             'name' => $validated['name'],
             'type' => $validated['type'],
             'status' => AgentStatus::OFFLINE,
+            'source' => $validated['source'] ?? 'unknown',
+            'external_id' => $validated['external_id'] ?? null,
             'avatar' => $validated['avatar'] ?? null,
             'capacity' => $validated['capacity'] ?? 1,
             'priority' => $validated['priority'] ?? 50,
             'capabilities' => $validated['capabilities'] ?? [],
         ]);
+
+        // Broadcast events
+        broadcast(new AgentCreated($agent));
+        broadcast(new AgentStatusChanged($agent));
 
         return new AgentResource($agent);
     }
@@ -79,6 +94,8 @@ class AgentController extends Controller
             'name' => 'sometimes|string|max:255',
             'type' => ['sometimes', new Enum(AgentType::class)],
             'status' => ['sometimes', new Enum(AgentStatus::class)],
+            'source' => 'sometimes|string|max:100',
+            'external_id' => 'sometimes|nullable|string|max:255',
             'current_task' => 'sometimes|nullable|string|max:500',
             'avatar' => 'sometimes|nullable|string|max:255',
             'capacity' => 'sometimes|integer|min:1|max:100',
@@ -87,7 +104,16 @@ class AgentController extends Controller
             'capabilities.*' => 'string|max:100',
         ]);
 
+        // Track if status or current_task changed
+        $statusChanged = isset($validated['status']) && $validated['status'] !== $agent->status;
+        $currentTaskChanged = isset($validated['current_task']) && $validated['current_task'] !== $agent->current_task;
+
         $agent->update($validated);
+
+        // Broadcast AgentStatusChanged if relevant fields changed
+        if ($statusChanged || $currentTaskChanged) {
+            broadcast(new AgentStatusChanged($agent->fresh()));
+        }
 
         return new AgentResource($agent->fresh());
     }
@@ -117,15 +143,20 @@ class AgentController extends Controller
             'metrics' => 'sometimes|array',
         ]);
 
+        $oldStatus = $agent->status;
+        $oldTask = $agent->current_task;
+
         $updateData = [
             'last_seen_at' => now(),
         ];
 
+        $autoStatusChange = false;
         if (isset($validated['status'])) {
             $updateData['status'] = $validated['status'];
         } elseif ($agent->status === AgentStatus::OFFLINE) {
             // Auto-set to idle if coming back online
             $updateData['status'] = AgentStatus::IDLE;
+            $autoStatusChange = true;
         }
 
         if (isset($validated['current_task'])) {
@@ -133,10 +164,19 @@ class AgentController extends Controller
         }
 
         $agent->update($updateData);
+        $agent->refresh();
+
+        // Broadcast if status or current_task changed
+        $statusChanged = $oldStatus !== $agent->status;
+        $currentTaskChanged = $oldTask !== $agent->current_task;
+
+        if ($statusChanged || $currentTaskChanged || $autoStatusChange) {
+            broadcast(new AgentStatusChanged($agent));
+        }
 
         return response()->json([
             'message' => 'Heartbeat received',
-            'agent' => new AgentResource($agent->fresh()),
+            'agent' => new AgentResource($agent),
         ]);
     }
 
@@ -154,10 +194,14 @@ class AgentController extends Controller
 
         $processedCount = 0;
         $errors = [];
+        $broadcastEvents = []; // Track events to broadcast
 
         foreach ($validated['events'] as $index => $event) {
             try {
-                $this->processEvent($agent, $event);
+                $result = $this->processEvent($agent, $event);
+                if ($result) {
+                    $broadcastEvents[] = $result;
+                }
                 $processedCount++;
             } catch (\Exception $e) {
                 $errors[] = [
@@ -170,6 +214,11 @@ class AgentController extends Controller
 
         // Update last_seen_at after processing events
         $agent->update(['last_seen_at' => now()]);
+
+        // Broadcast collected events
+        foreach ($broadcastEvents as $eventToBroadcast) {
+            broadcast($eventToBroadcast);
+        }
 
         return response()->json([
             'message' => 'Events processed',
@@ -223,16 +272,22 @@ class AgentController extends Controller
 
     /**
      * Process a single event from an agent.
+     * Returns event object to broadcast, or null if no broadcasting needed.
      */
-    protected function processEvent(Agent $agent, array $event): void
+    protected function processEvent(Agent $agent, array $event): ?object
     {
         $type = $event['type'];
         $data = $event['data'] ?? [];
+        $broadcastEvent = null;
 
         switch ($type) {
             case 'status_change':
                 if (isset($data['status'])) {
+                    $oldStatus = $agent->status;
                     $agent->update(['status' => $data['status']]);
+                    if ($oldStatus !== $agent->status) {
+                        $broadcastEvent = new AgentStatusChanged($agent->fresh());
+                    }
                 }
                 break;
 
@@ -241,6 +296,7 @@ class AgentController extends Controller
                     'status' => AgentStatus::BUSY,
                     'current_task' => $data['task_description'] ?? 'Working on task',
                 ]);
+                $broadcastEvent = new AgentStatusChanged($agent->fresh());
                 break;
 
             case 'task_progress':
@@ -248,6 +304,7 @@ class AgentController extends Controller
                     $task = $agent->tasks()->find($data['task_id']);
                     if ($task && isset($data['progress'])) {
                         $task->update(['progress' => $data['progress']]);
+                        $broadcastEvent = new TaskUpdated($task->fresh('assignedAgent'));
                     }
                 }
                 break;
@@ -257,6 +314,8 @@ class AgentController extends Controller
                     'status' => AgentStatus::IDLE,
                     'current_task' => null,
                 ]);
+                $broadcastEvent = new AgentStatusChanged($agent->fresh());
+
                 if (isset($data['task_id'])) {
                     $task = $agent->tasks()->find($data['task_id']);
                     if ($task) {
@@ -265,6 +324,11 @@ class AgentController extends Controller
                             'progress' => 100,
                             'result' => $data['result'] ?? null,
                         ]);
+                        // Broadcast both TaskUpdated and TaskCompleted
+                        broadcast(new TaskUpdated($task->fresh('assignedAgent')));
+                        broadcast(new TaskCompleted($task->fresh('assignedAgent')));
+                        // Return null since we already broadcasted
+                        $broadcastEvent = null;
                     }
                 }
                 break;
@@ -274,6 +338,8 @@ class AgentController extends Controller
                     'status' => AgentStatus::IDLE,
                     'current_task' => null,
                 ]);
+                $broadcastEvent = new AgentStatusChanged($agent->fresh());
+
                 if (isset($data['task_id'])) {
                     $task = $agent->tasks()->find($data['task_id']);
                     if ($task) {
@@ -281,14 +347,37 @@ class AgentController extends Controller
                             'status' => 'failed',
                             'result' => ['error' => $data['error'] ?? 'Unknown error'],
                         ]);
+                        // Broadcast both TaskUpdated and TaskCompleted (for failed status)
+                        broadcast(new TaskUpdated($task->fresh('assignedAgent')));
+                        broadcast(new TaskCompleted($task->fresh('assignedAgent')));
+                        // Return null since we already broadcasted
+                        $broadcastEvent = null;
                     }
                 }
                 break;
 
             case 'message_sent':
             case 'message_received':
-                // Log communication events
+                // Update agent status to communicating
+                $oldStatus = $agent->status;
                 $agent->update(['status' => AgentStatus::COMMUNICATING]);
+                if ($oldStatus !== AgentStatus::COMMUNICATING) {
+                    $broadcastEvent = new AgentStatusChanged($agent->fresh());
+                }
+
+                // If message data provided, create message and broadcast
+                if (isset($data['session_id']) && isset($data['content'])) {
+                    $message = Message::create([
+                        'session_id' => $data['session_id'],
+                        'from_agent_id' => $type === 'message_sent' ? $agent->id : ($data['from_agent_id'] ?? null),
+                        'to_agent_id' => $type === 'message_received' ? $agent->id : ($data['to_agent_id'] ?? null),
+                        'content' => $data['content'],
+                        'message_type' => $data['message_type'] ?? 'text',
+                        'channel' => $data['channel'] ?? null,
+                        'timestamp' => now(),
+                    ]);
+                    broadcast(new MessageCreated($message->load(['fromAgent', 'toAgent'])));
+                }
                 break;
 
             case 'error':
@@ -296,7 +385,10 @@ class AgentController extends Controller
                     'status' => AgentStatus::ERROR,
                     'current_task' => $data['error_message'] ?? 'Error occurred',
                 ]);
+                $broadcastEvent = new AgentStatusChanged($agent->fresh());
                 break;
         }
+
+        return $broadcastEvent;
     }
 }

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TaskStatus;
+use App\Events\TaskCompleted;
+use App\Events\TaskUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TaskResource;
-use App\Models\Task;
 use App\Jobs\ExecuteAgentTaskJob;
-use App\Enums\TaskStatus;
+use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -15,12 +17,13 @@ class TaskController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $tasks = Task::with('assignedAgent', 'session')
-            ->when($request->session_id, fn($q, $id) => $q->where('session_id', $id))
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->when($request->agent_id, fn($q, $id) => $q->where('assigned_agent_id', $id))
+        $tasks = Task::query()
+            ->with(['assignedAgent', 'session'])
+            ->when($request->session_id, fn ($q, $id) => $q->where('session_id', $id))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->agent_id, fn ($q, $id) => $q->where('assigned_agent_id', $id))
             ->orderByDesc('created_at')
-            ->paginate(50);
+            ->paginate($request->integer('per_page', 50));
 
         return TaskResource::collection($tasks);
     }
@@ -38,14 +41,26 @@ class TaskController extends Controller
             'result' => 'sometimes|array',
         ]);
 
-        $task->update($validated);
+        $oldStatus = $task->status;
 
-        return new TaskResource($task->fresh('assignedAgent'));
+        $task->update($validated);
+        $task->refresh();
+        $task->load('assignedAgent');
+
+        // Broadcast TaskUpdated
+        broadcast(new TaskUpdated($task));
+
+        // Broadcast TaskCompleted if status changed to completed or failed
+        if ($oldStatus !== $task->status && in_array($task->status, ['completed', 'failed'])) {
+            broadcast(new TaskCompleted($task));
+        }
+
+        return new TaskResource($task);
     }
 
     public function retry(Task $task): JsonResponse
     {
-        if (!$task->canRetry()) {
+        if (! $task->canRetry()) {
             return response()->json([
                 'message' => 'Task cannot be retried (max attempts reached)',
             ], 422);
@@ -57,6 +72,12 @@ class TaskController extends Controller
             'result' => null,
             'assigned_agent_id' => null,
         ]);
+
+        $task->refresh();
+        $task->load('assignedAgent');
+
+        // Broadcast TaskUpdated after retry
+        broadcast(new TaskUpdated($task));
 
         ExecuteAgentTaskJob::dispatch($task->id)->delay(now()->addSeconds(2));
 

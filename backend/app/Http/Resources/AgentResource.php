@@ -20,6 +20,8 @@ class AgentResource extends JsonResource
             'name' => $this->name,
             'type' => $this->type,
             'status' => $this->status,
+            'source' => $this->source,
+            'external_id' => $this->external_id,
             'current_task' => $this->current_task,
             'avatar' => $this->avatar,
             'capacity' => $this->capacity,

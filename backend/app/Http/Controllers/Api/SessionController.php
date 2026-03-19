@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\SessionCompleted;
+use App\Events\SessionUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SessionResource;
 use App\Http\Resources\TaskLogResource;
@@ -10,7 +12,6 @@ use App\Services\Orchestration\AgentOrchestrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Validation\ValidationException;
 
 class SessionController extends Controller
 {
@@ -25,10 +26,10 @@ class SessionController extends Controller
     {
         $sessions = Session::query()
             ->withCount('tasks')
-            ->with('tasks.assignedAgent')
-            ->when($request->status, fn($q, $status) => $q->where('status', $status))
-            ->when($request->source, fn($q, $source) => $q->where('command_source', $source))
-            ->when($request->search, fn($q, $search) => $q->where('original_command', 'like', "%{$search}%"))
+            ->with(['agents', 'tasks.assignedAgent'])
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->when($request->source, fn ($q, $source) => $q->where('command_source', $source))
+            ->when($request->search, fn ($q, $search) => $q->where('original_command', 'like', "%{$search}%"))
             ->orderByDesc('created_at')
             ->paginate($request->integer('per_page', 20));
 
@@ -37,6 +38,8 @@ class SessionController extends Controller
 
     /**
      * Create new session via OrchestrationService.
+     * Note: OrchestrationService already broadcasts SessionCreated internally,
+     * so we don't duplicate the broadcast here to avoid double events.
      */
     public function store(Request $request): JsonResponse
     {
@@ -47,6 +50,7 @@ class SessionController extends Controller
         ]);
 
         try {
+            // OrchestrationService will broadcast SessionCreated
             $session = $this->orchestration->createSession(
                 $validated['source'] ?? 'api',
                 $validated['command'],
@@ -93,7 +97,7 @@ class SessionController extends Controller
      */
     public function cancel(Session $session): JsonResponse
     {
-        if (!$session->isActive()) {
+        if (! $session->isActive()) {
             return response()->json([
                 'message' => 'Session is not active and cannot be cancelled',
                 'status' => $session->status,
@@ -102,9 +106,13 @@ class SessionController extends Controller
 
         try {
             $this->orchestration->cancelSession($session);
+            $session->refresh();
+
+            // Broadcast SessionCompleted after cancel
+            broadcast(new SessionCompleted($session));
 
             return response()->json([
-                'data' => new SessionResource($session->fresh(['tasks.assignedAgent'])),
+                'data' => new SessionResource($session->load(['tasks.assignedAgent'])),
                 'message' => 'Session cancelled successfully',
             ]);
         } catch (\Exception $e) {
@@ -120,7 +128,7 @@ class SessionController extends Controller
      */
     public function pause(Session $session): JsonResponse
     {
-        if (!$session->isActive()) {
+        if (! $session->isActive()) {
             return response()->json([
                 'message' => 'Session is not active and cannot be paused',
                 'status' => $session->status,
@@ -129,9 +137,13 @@ class SessionController extends Controller
 
         try {
             $this->orchestration->pauseSession($session);
+            $session->refresh();
+
+            // Broadcast SessionUpdated after pause
+            broadcast(new SessionUpdated($session));
 
             return response()->json([
-                'data' => new SessionResource($session->fresh(['tasks.assignedAgent'])),
+                'data' => new SessionResource($session->load(['tasks.assignedAgent'])),
                 'message' => 'Session paused successfully',
             ]);
         } catch (\Exception $e) {
@@ -149,9 +161,13 @@ class SessionController extends Controller
     {
         try {
             $this->orchestration->resumeSession($session);
+            $session->refresh();
+
+            // Broadcast SessionUpdated after resume
+            broadcast(new SessionUpdated($session));
 
             return response()->json([
-                'data' => new SessionResource($session->fresh(['tasks.assignedAgent'])),
+                'data' => new SessionResource($session->load(['tasks.assignedAgent'])),
                 'message' => 'Session resumed successfully',
             ]);
         } catch (\Exception $e) {
@@ -170,7 +186,7 @@ class SessionController extends Controller
         $logs = $session->tasks()
             ->with(['logs.agent', 'logs.task:id,uuid,title'])
             ->get()
-            ->flatMap(fn($task) => $task->logs)
+            ->flatMap(fn ($task) => $task->logs)
             ->sortBy('timestamp')
             ->values();
 

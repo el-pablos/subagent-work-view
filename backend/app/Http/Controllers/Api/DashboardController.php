@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\AgentStatus;
+use App\Enums\SessionStatus;
+use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AgentResource;
 use App\Http\Resources\SessionResource;
 use App\Models\Agent;
 use App\Models\Session;
 use App\Models\Task;
-use App\Enums\AgentStatus;
-use App\Enums\SessionStatus;
-use App\Enums\TaskStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -18,11 +18,28 @@ class DashboardController extends Controller
 {
     public function overview(): JsonResponse
     {
-        $activeSessions = Session::whereIn('status', [
-            SessionStatus::QUEUED,
-            SessionStatus::PLANNING,
-            SessionStatus::RUNNING,
-        ])->count();
+        $sessionStats = DB::query()
+            ->fromSub(
+                Session::query()
+                    ->select('id', 'status')
+                    ->withCount([
+                        'tasks as recent_completed_tasks_count' => fn ($query) => $query
+                            ->where('status', TaskStatus::COMPLETED)
+                            ->where('finished_at', '>=', now()->subHours(24)),
+                    ]),
+                'session_stats'
+            )
+            ->selectRaw('COUNT(*) as total_sessions')
+            ->selectRaw("
+                SUM(
+                    CASE
+                        WHEN status IN ('queued', 'planning', 'running') THEN 1
+                        ELSE 0
+                    END
+                ) as active_sessions
+            ")
+            ->selectRaw('COALESCE(SUM(recent_completed_tasks_count), 0) as recent_completed_tasks')
+            ->first();
 
         $agentStats = Agent::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
@@ -34,10 +51,6 @@ class DashboardController extends Controller
             ->pluck('count', 'status')
             ->toArray();
 
-        $recentCompletedTasks = Task::where('status', TaskStatus::COMPLETED)
-            ->where('finished_at', '>=', now()->subHours(24))
-            ->count();
-
         $avgTaskDuration = Task::where('status', TaskStatus::COMPLETED)
             ->whereNotNull('started_at')
             ->whereNotNull('finished_at')
@@ -45,11 +58,11 @@ class DashboardController extends Controller
             ->value('avg_duration');
 
         return response()->json([
-            'active_sessions' => $activeSessions,
-            'total_sessions' => Session::count(),
+            'active_sessions' => (int) ($sessionStats->active_sessions ?? 0),
+            'total_sessions' => (int) ($sessionStats->total_sessions ?? 0),
             'agent_stats' => $agentStats,
             'task_stats' => $taskStats,
-            'recent_completed_tasks' => $recentCompletedTasks,
+            'recent_completed_tasks' => (int) ($sessionStats->recent_completed_tasks ?? 0),
             'avg_task_duration_seconds' => round($avgTaskDuration ?? 0, 2),
             'agents_online' => Agent::where('status', '!=', AgentStatus::OFFLINE)->count(),
             'agents_total' => Agent::count(),

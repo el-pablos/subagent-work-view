@@ -10,5 +10,13 @@ export {
 } from "./Skeleton";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { ConnectionStatus } from "./ConnectionStatus";
+export { RelativeTime } from "./RelativeTime";
+export { HeartbeatIndicator } from "./HeartbeatIndicator";
+export { SourceBadge } from "./SourceBadge";
 export type { ToastMessage, AlertType } from "./AlertToast";
 export type { StatusType } from "./StatusChip";
+export type { ConnectionState, ConnectionStatusProps } from "./ConnectionStatus";
+export type { RelativeTimeProps } from "./RelativeTime";
+export type { HeartbeatIndicatorProps } from "./HeartbeatIndicator";
+export type { SourceType, SourceBadgeProps } from "./SourceBadge";
