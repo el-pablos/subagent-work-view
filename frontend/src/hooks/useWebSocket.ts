@@ -162,6 +162,7 @@ export interface UseSessionWebSocketOptions {
   sessionId: number | string | null;
   onTaskUpdated?: (event: TaskUpdatedEvent) => void;
   onTaskCreated?: (event: TaskUpdatedEvent) => void;
+  onTaskProgressUpdated?: (event: TaskProgressUpdatedEvent) => void;
   onMessageCreated?: (event: MessageCreatedEvent) => void;
   onSessionUpdated?: (event: SessionUpdatedEvent) => void;
 }

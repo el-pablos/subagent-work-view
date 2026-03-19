@@ -29,9 +29,18 @@ const getInitials = (name: string): string => {
     .join("");
 };
 
+// Status to glow color mapping
+const statusGlowColors: Record<string, string> = {
+  idle: "rgba(148, 163, 184, 0.4)", // slate
+  busy: "rgba(16, 185, 129, 0.6)", // emerald
+  communicating: "rgba(56, 189, 248, 0.6)", // sky
+  error: "rgba(244, 63, 94, 0.6)", // rose
+};
+
 const AgentNode: React.FC<AgentNodeProps> = ({
   agent,
   isSelected = false,
+  isRecentlyChanged = false,
   onClick,
   size = 64,
   className = "",
@@ -41,6 +50,7 @@ const AgentNode: React.FC<AgentNodeProps> = ({
 
   const isWorking = agent.status === "busy" || agent.status === "communicating";
   const bgColor = roleColors[agent.role] || "bg-gray-600";
+  const glowColor = statusGlowColors[agent.status] || statusGlowColors.idle;
 
   return (
     <motion.div
@@ -51,7 +61,54 @@ const AgentNode: React.FC<AgentNodeProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
+      animate={
+        isRecentlyChanged
+          ? {
+              scale: [1, 1.1, 1],
+              transition: {
+                duration: 0.4,
+                ease: "easeInOut",
+              },
+            }
+          : {}
+      }
     >
+      {/* Active glow effect */}
+      {isWorking && (
+        <motion.div
+          className="absolute inset-0 rounded-full"
+          style={{
+            boxShadow: `0 0 20px 8px ${glowColor}`,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: [0.5, 1, 0.5],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      )}
+
+      {/* Pulse ring animation on status change */}
+      {isRecentlyChanged && (
+        <motion.div
+          className="absolute inset-0 rounded-full border-2"
+          style={{ borderColor: glowColor }}
+          initial={{ scale: 1, opacity: 1 }}
+          animate={{
+            scale: [1, 1.5, 2],
+            opacity: [1, 0.5, 0],
+          }}
+          transition={{
+            duration: 1,
+            ease: "easeOut",
+            repeat: 2,
+          }}
+        />
+      )}
       {/* Status ring */}
       <AgentStatusRing status={agent.status} size={size} />
 

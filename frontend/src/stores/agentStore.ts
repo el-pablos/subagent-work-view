@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useShallow } from "zustand/shallow";
 import { immer } from "zustand/middleware/immer";
 import { Agent, AgentStatus } from "../types";
 

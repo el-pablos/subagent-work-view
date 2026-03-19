@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useShallow } from "zustand/shallow";
 import { immer } from "zustand/middleware/immer";
 import { Session, SessionStatus } from "../types";
 
