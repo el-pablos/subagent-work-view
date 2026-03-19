@@ -27,63 +27,72 @@ const initialState: SessionState = {
 };
 
 export const useSessionStore = create<SessionState & SessionActions>()(
-  immer((set, get) => ({
-    ...initialState,
+  persist(
+    immer((set, get) => ({
+      ...initialState,
 
-    setSessions: (sessions) =>
-      set((state) => {
-        state.sessions = {};
-        sessions.forEach((session) => {
+      setSessions: (sessions) =>
+        set((state) => {
+          state.sessions = {};
+          sessions.forEach((session) => {
+            state.sessions[session.id] = session;
+          });
+        }),
+
+      updateSession: (session) =>
+        set((state) => {
           state.sessions[session.id] = session;
-        });
-      }),
+        }),
 
-    updateSession: (session) =>
-      set((state) => {
-        state.sessions[session.id] = session;
-      }),
+      updateSessionPartial: (id, updates) =>
+        set((state) => {
+          if (state.sessions[id]) {
+            state.sessions[id] = { ...state.sessions[id], ...updates };
+          }
+        }),
 
-    updateSessionPartial: (id, updates) =>
-      set((state) => {
-        if (state.sessions[id]) {
-          state.sessions[id] = { ...state.sessions[id], ...updates };
-        }
-      }),
+      addSession: (session) =>
+        set((state) => {
+          state.sessions[session.id] = session;
+        }),
 
-    addSession: (session) =>
-      set((state) => {
-        state.sessions[session.id] = session;
-      }),
+      setActiveSession: (id) =>
+        set((state) => {
+          state.activeSessionId = id;
+        }),
 
-    setActiveSession: (id) =>
-      set((state) => {
-        state.activeSessionId = id;
-      }),
+      getSession: (id) => {
+        const state = get();
+        return state.sessions[id];
+      },
 
-    getSession: (id) => {
-      const state = get();
-      return state.sessions[id];
+      getActiveSession: () => {
+        const state = get();
+        if (state.activeSessionId === null) return undefined;
+        return state.sessions[state.activeSessionId];
+      },
+
+      getSessionsByStatus: (status) => {
+        const state = get();
+        return Object.values(state.sessions).filter(
+          (session) => session.status === status,
+        );
+      },
+
+      clearSessions: () =>
+        set((state) => {
+          state.sessions = {};
+          state.activeSessionId = null;
+        }),
+    })),
+    {
+      name: "session-storage",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        activeSessionId: state.activeSessionId,
+      }),
     },
-
-    getActiveSession: () => {
-      const state = get();
-      if (state.activeSessionId === null) return undefined;
-      return state.sessions[state.activeSessionId];
-    },
-
-    getSessionsByStatus: (status) => {
-      const state = get();
-      return Object.values(state.sessions).filter(
-        (session) => session.status === status,
-      );
-    },
-
-    clearSessions: () =>
-      set((state) => {
-        state.sessions = {};
-        state.activeSessionId = null;
-      }),
-  })),
+  ),
 );
 
 // Selectors for optimized re-renders
