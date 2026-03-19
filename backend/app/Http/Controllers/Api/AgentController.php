@@ -134,10 +134,40 @@ class AgentController extends Controller
 
         $agent->update($updateData);
 
+        // Get next instructions for agent
+        $nextInstructions = $this->getNextInstructions($agent);
+
         return response()->json([
             'message' => 'Heartbeat received',
             'agent' => new AgentResource($agent->fresh()),
+            'next_instructions' => $nextInstructions,
         ]);
+    }
+
+    /**
+     * Get next instructions for agent based on current tasks.
+     */
+    protected function getNextInstructions(Agent $agent): ?array
+    {
+        // Get next pending task for this agent
+        $nextTask = $agent->tasks()
+            ->whereIn('status', ['pending', 'assigned'])
+            ->orderBy('priority', 'desc')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if (!$nextTask) {
+            return null;
+        }
+
+        return [
+            'task_id' => $nextTask->id,
+            'task_uuid' => $nextTask->uuid,
+            'title' => $nextTask->title,
+            'description' => $nextTask->description,
+            'priority' => $nextTask->priority,
+            'status' => $nextTask->status,
+        ];
     }
 
     /**
