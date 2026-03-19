@@ -1,5 +1,7 @@
 <?php
 
+use App\Logging\AgentContextProcessor;
+use App\Logging\ContextFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
