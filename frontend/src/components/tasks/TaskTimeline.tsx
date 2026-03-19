@@ -1,9 +1,14 @@
-import React from "react";
+import React, { useId } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { RelativeTime } from "../common/RelativeTime";
+import { cn } from "../../lib/utils";
 import type { TaskHistoryEvent } from "../../types/task";
 
-interface TaskTimelineProps {
+export interface TaskTimelineProps {
   events: TaskHistoryEvent[];
   className?: string;
+  activeEventId?: string;
+  scrollAriaLabel?: string;
 }
 
 const getEventIcon = (type: TaskHistoryEvent["type"]): string => {
@@ -33,61 +38,60 @@ const getEventColor = (
   switch (type) {
     case "created":
       return {
-        bg: "bg-gray-700",
-        border: "border-gray-400",
-        text: "text-gray-400",
+        bg: "bg-slate-800/80",
+        border: "border-slate-400",
+        text: "text-slate-300",
       };
     case "assigned":
       return {
-        bg: "bg-purple-900/50",
-        border: "border-purple-400",
-        text: "text-purple-400",
+        bg: "bg-violet-950/70",
+        border: "border-violet-400",
+        text: "text-violet-300",
       };
     case "started":
       return {
-        bg: "bg-emerald-900/50",
+        bg: "bg-emerald-950/70",
         border: "border-emerald-400",
-        text: "text-emerald-400",
+        text: "text-emerald-300",
       };
     case "progress":
       return {
-        bg: "bg-cyan-900/50",
+        bg: "bg-cyan-950/70",
         border: "border-cyan-400",
-        text: "text-cyan-400",
+        text: "text-cyan-300",
       };
     case "completed":
       return {
-        bg: "bg-sky-900/50",
+        bg: "bg-sky-950/70",
         border: "border-sky-400",
-        text: "text-sky-400",
+        text: "text-sky-300",
       };
     case "failed":
       return {
-        bg: "bg-rose-900/50",
+        bg: "bg-rose-950/70",
         border: "border-rose-400",
-        text: "text-rose-400",
+        text: "text-rose-300",
       };
     case "status_change":
       return {
-        bg: "bg-amber-900/50",
+        bg: "bg-amber-950/70",
         border: "border-amber-400",
-        text: "text-amber-400",
+        text: "text-amber-300",
       };
     default:
       return {
-        bg: "bg-gray-700",
-        border: "border-gray-400",
-        text: "text-gray-400",
+        bg: "bg-slate-800/80",
+        border: "border-slate-400",
+        text: "text-slate-300",
       };
   }
 };
 
 const formatTimestamp = (timestamp: string): string => {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  return date.toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
   });
 };
 
@@ -130,59 +134,143 @@ const calculateDuration = (
 const TaskTimeline: React.FC<TaskTimelineProps> = ({
   events,
   className = "",
+  activeEventId,
+  scrollAriaLabel = "Task timeline events",
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+  const titleId = useId();
+
   if (events.length === 0) {
     return (
-      <div className={`text-gray-500 text-sm text-center py-4 ${className}`}>
-        No timeline events
-      </div>
+      <section aria-labelledby={titleId} className={cn("py-4", className)}>
+        <h3 id={titleId} className="sr-only">
+          Task timeline
+        </h3>
+        <div className="text-center text-sm text-slate-400">
+          No timeline events
+        </div>
+      </section>
     );
   }
 
+  const motionContainer: {
+    initial?: "hidden";
+    animate?: "visible";
+    variants?: Variants;
+  } = shouldReduceMotion
+    ? {}
+    : {
+        initial: "hidden" as const,
+        animate: "visible" as const,
+        variants: {
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.08,
+              delayChildren: 0.06,
+            },
+          },
+        },
+      };
+
+  const itemVariants: Variants | undefined = shouldReduceMotion
+    ? undefined
+    : {
+        hidden: { opacity: 0, x: -20 },
+        visible: {
+          opacity: 1,
+          x: 0,
+          transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
+        },
+      };
+
   return (
-    <div className={`relative ${className}`}>
-      {/* Horizontal scrollable container */}
-      <div className="overflow-x-auto pb-4">
-        <div className="flex items-start min-w-max px-4">
+    <section aria-labelledby={titleId} className={cn("relative", className)}>
+      <h3 id={titleId} className="sr-only">
+        Task timeline
+      </h3>
+
+      <div
+        tabIndex={0}
+        aria-label={scrollAriaLabel}
+        className="overflow-x-auto pb-4 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+      >
+        <motion.ol
+          className="flex min-w-max snap-x snap-mandatory items-start gap-3 px-4 sm:gap-4"
+          {...motionContainer}
+        >
           {events.map((event, index) => {
             const eventColor = getEventColor(event.type);
             const duration = calculateDuration(events, index);
             const isLast = index === events.length - 1;
+            const isActive = activeEventId
+              ? event.id === activeEventId
+              : isLast;
 
             return (
-              <div key={event.id} className="flex items-center">
-                {/* Event node */}
-                <div className="flex flex-col items-center">
-                  {/* Event circle */}
+              <motion.li
+                key={event.id}
+                variants={itemVariants}
+                className="flex snap-start items-start"
+              >
+                <div className="flex min-w-[120px] max-w-[148px] flex-col items-center rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-3 text-center shadow-[0_12px_30px_-24px_rgba(34,211,238,0.4)] backdrop-blur-sm">
                   <div
-                    className={`relative w-10 h-10 rounded-full ${eventColor.bg} border-2 ${eventColor.border} flex items-center justify-center ${eventColor.text} text-sm font-medium z-10 transition-all hover:scale-110`}
+                    className={cn(
+                      "relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-medium transition-transform",
+                      eventColor.bg,
+                      eventColor.border,
+                      eventColor.text,
+                    )}
                   >
-                    {getEventIcon(event.type)}
-                    {/* Pulse animation for last event if in progress */}
-                    {isLast && event.type === "started" && (
-                      <div
-                        className={`absolute inset-0 rounded-full ${eventColor.border} border-2 animate-ping opacity-30`}
-                      />
+                    <span aria-hidden="true">{getEventIcon(event.type)}</span>
+
+                    {isActive && (
+                      <>
+                        <motion.span
+                          aria-hidden="true"
+                          className="absolute -right-1.5 -top-1.5 h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_0_4px_rgba(34,211,238,0.18)]"
+                          animate={
+                            shouldReduceMotion
+                              ? undefined
+                              : {
+                                  scale: [1, 1.3, 1],
+                                  opacity: [0.8, 1, 0.8],
+                                  boxShadow: [
+                                    "0 0 0 0 rgba(103,232,249,0.35)",
+                                    "0 0 0 8px rgba(103,232,249,0)",
+                                    "0 0 0 0 rgba(103,232,249,0.35)",
+                                  ],
+                                }
+                          }
+                          transition={{
+                            duration: shouldReduceMotion ? 0 : 1.8,
+                            repeat: shouldReduceMotion ? 0 : Infinity,
+                            ease: "easeInOut",
+                          }}
+                        />
+                        <span className="sr-only">Active event</span>
+                      </>
                     )}
                   </div>
 
-                  {/* Event label */}
-                  <div className="mt-2 text-center">
-                    <span className={`text-xs font-medium ${eventColor.text}`}>
+                  <div className="mt-3 space-y-1">
+                    <span className={cn("text-xs font-semibold", eventColor.text)}>
                       {formatEventLabel(event)}
                     </span>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <RelativeTime
+                      timestamp={event.timestamp}
+                      className="block text-xs text-slate-300"
+                    />
+                    <p className="text-[11px] text-slate-500">
                       {formatTimestamp(event.timestamp)}
                     </p>
-                    {/* Agent info */}
+
                     {event.data?.agent && (
-                      <div className="flex items-center justify-center mt-1">
-                        <div className="w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center mr-1">
-                          <span className="text-[8px] text-gray-300">
-                            {event.data.agent.name.charAt(0).toUpperCase()}
-                          </span>
+                      <div className="mt-2 flex items-center justify-center gap-1.5">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-[9px] font-semibold text-slate-100">
+                          {event.data.agent.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-[10px] text-gray-500">
+                        <span className="truncate text-[11px] text-slate-300">
                           {event.data.agent.name}
                         </span>
                       </div>
@@ -190,39 +278,35 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
                   </div>
                 </div>
 
-                {/* Connection line */}
                 {!isLast && (
-                  <div className="flex flex-col items-center mx-2">
-                    <div className="h-0.5 w-16 bg-gradient-to-r from-gray-600 to-gray-700 relative">
-                      {/* Arrow */}
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-gray-600 border-y-[4px] border-y-transparent" />
+                  <div className="mx-2 mt-5 flex flex-col items-center sm:mx-3">
+                    <div className="relative h-0.5 w-12 shrink-0 bg-gradient-to-r from-slate-500 to-slate-700 sm:w-16">
+                      <div className="absolute right-0 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[4px] border-l-[6px] border-y-transparent border-l-slate-500" />
                     </div>
-                    {/* Duration label */}
                     {duration && (
-                      <span className="text-[10px] text-gray-600 mt-1">
+                      <span className="mt-1 text-[10px] font-medium text-slate-400">
                         +{duration}
                       </span>
                     )}
                   </div>
                 )}
-              </div>
+              </motion.li>
             );
           })}
-        </div>
+        </motion.ol>
       </div>
 
-      {/* Time markers at the bottom */}
       {events.length >= 2 && (
-        <div className="flex justify-between px-4 mt-2 border-t border-gray-800 pt-2">
-          <div className="text-xs text-gray-600">
+        <div className="mt-2 flex justify-between border-t border-slate-800 px-4 pt-2">
+          <div className="text-xs text-slate-400">
             Start: {formatTimestamp(events[0].timestamp)}
           </div>
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-slate-400">
             Latest: {formatTimestamp(events[events.length - 1].timestamp)}
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
