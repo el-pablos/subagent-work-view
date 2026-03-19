@@ -90,3 +90,39 @@ export const useTaskStore = create<TaskState & TaskActions>()(
       }),
   })),
 );
+
+// Selectors for optimized re-renders
+export const useTasksArray = () =>
+  useTaskStore((state) => Object.values(state.tasks));
+
+export const useTaskById = (id: number | null) =>
+  useTaskStore((state) => (id ? state.tasks[id] : undefined));
+
+export const useTasksByStatus = (status: TaskStatus) =>
+  useTaskStore((state) =>
+    Object.values(state.tasks).filter((task) => task.status === status),
+  );
+
+export const useTasksBySession = (sessionId: number) =>
+  useTaskStore((state) =>
+    Object.values(state.tasks).filter((task) => task.session_id === sessionId),
+  );
+
+export const useTasksByAgent = (agentId: number) =>
+  useTaskStore((state) =>
+    Object.values(state.tasks).filter(
+      (task) => task.assigned_agent_id === agentId,
+    ),
+  );
+
+export const useTaskActions = () =>
+  useTaskStore(
+    useShallow((state) => ({
+      setTasks: state.setTasks,
+      updateTask: state.updateTask,
+      updateTaskPartial: state.updateTaskPartial,
+      addTask: state.addTask,
+      removeTask: state.removeTask,
+      clearTasks: state.clearTasks,
+    })),
+  );

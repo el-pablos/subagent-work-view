@@ -65,29 +65,28 @@ export const useMessageStore = create<MessageState & MessageActions>()(
 );
 
 // Selectors for optimized re-renders
-export const useMessages = () =>
-  useMessageStore((state) => state.messages);
+export const useMessages = () => useMessageStore((state) => state.messages);
 
 export const useMessagesBySession = (sessionId: number) =>
   useMessageStore((state) =>
-    state.messages.filter((msg) => msg.session_id === sessionId)
+    state.messages.filter((msg) => msg.session_id === sessionId),
   );
 
 export const useMessagesByChannel = (channel: MessageChannel) =>
   useMessageStore((state) =>
-    state.messages.filter((msg) => msg.channel === channel)
+    state.messages.filter((msg) => msg.channel === channel),
   );
 
 export const useMessagesByType = (type: MessageType) =>
   useMessageStore((state) =>
-    state.messages.filter((msg) => msg.message_type === type)
+    state.messages.filter((msg) => msg.message_type === type),
   );
 
 export const useMessagesByAgent = (agentId: number) =>
   useMessageStore((state) =>
     state.messages.filter(
-      (msg) => msg.from_agent_id === agentId || msg.to_agent_id === agentId
-    )
+      (msg) => msg.from_agent_id === agentId || msg.to_agent_id === agentId,
+    ),
   );
 
 export const useMessageActions = () =>
@@ -96,5 +95,5 @@ export const useMessageActions = () =>
       setMessages: state.setMessages,
       addMessage: state.addMessage,
       clearMessages: state.clearMessages,
-    }))
+    })),
   );
