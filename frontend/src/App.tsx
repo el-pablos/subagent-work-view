@@ -290,33 +290,51 @@ function App() {
   }, []);
 
   return (
-    <Suspense
-      fallback={
-        <div className="h-screen w-screen flex items-center justify-center bg-slate-950">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading War Room...</p>
-          </div>
-        </div>
-      }
-    >
-      <WarRoomLayout
-        sessionId="session-abc123"
-        connectionStatus={connectionStatus}
-        isConnected={connectionStatus === "connected"}
-        agents={mockAgents}
-        agentConnections={mockConnections}
-        selectedAgentId={selectedAgentId}
-        onAgentSelect={handleAgentSelect}
-        tasks={mockTasks}
-        taskHistory={mockTaskHistory}
-        onTaskClick={handleTaskClick}
-        messages={mockMessages}
-        onSendCommand={handleSendCommand}
-        commandSuggestions={mockCommandSuggestions}
-        onSearch={handleSearch}
+    <>
+      <Toaster
+        position="top-right"
+        expand={false}
+        richColors
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast: "bg-slate-800 border-slate-700 text-white",
+            title: "text-white font-medium",
+            description: "text-slate-300",
+            actionButton: "bg-cyan-500 text-white",
+            cancelButton: "bg-slate-600 text-white",
+            closeButton: "bg-slate-700 text-slate-300 hover:text-white",
+          },
+        }}
       />
-    </Suspense>
+      <Suspense
+        fallback={
+          <div className="h-screen w-screen flex items-center justify-center bg-slate-950">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading War Room...</p>
+            </div>
+          </div>
+        }
+      >
+        <WarRoomLayout
+          sessionId="session-abc123"
+          connectionStatus={connectionStatus}
+          isConnected={connectionStatus === "connected"}
+          agents={mockAgents}
+          agentConnections={mockConnections}
+          selectedAgentId={selectedAgentId}
+          onAgentSelect={handleAgentSelect}
+          tasks={mockTasks}
+          taskHistory={mockTaskHistory}
+          onTaskClick={handleTaskClick}
+          messages={mockMessages}
+          onSendCommand={handleSendCommand}
+          commandSuggestions={mockCommandSuggestions}
+          onSearch={handleSearch}
+        />
+      </Suspense>
+    </>
   );
 }
 
