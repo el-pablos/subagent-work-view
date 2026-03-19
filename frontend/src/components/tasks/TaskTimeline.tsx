@@ -262,7 +262,11 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
 
                   {/* Event label */}
                   <div className="mt-2 text-center">
-                    <span className={`text-xs font-medium ${eventColor.text}`}>
+                    <span
+                      className={`text-xs font-medium ${eventColor.text} ${
+                        isHighlighted ? "animate-pulse" : ""
+                      }`}
+                    >
                       {formatEventLabel(event)}
                     </span>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -278,6 +282,15 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
                         </div>
                         <span className="text-[10px] text-gray-500">
                           {event.data.agent.name}
+                        </span>
+                      </div>
+                    )}
+                    {/* Live indicator for last running event */}
+                    {isLast && isRunning && (
+                      <div className="flex items-center justify-center mt-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1" />
+                        <span className="text-[10px] text-emerald-400 font-medium">
+                          LIVE
                         </span>
                       </div>
                     )}

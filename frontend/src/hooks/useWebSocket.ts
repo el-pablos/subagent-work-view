@@ -232,8 +232,11 @@ export function useSessionWebSocket(options: UseSessionWebSocketOptions) {
 export interface UseWebSocketWithStoreOptions {
   sessionId?: number | string | null;
   // Store update functions
+  addAgent?: (agent: Agent) => void;
   updateAgent?: (agent: Agent) => void;
+  removeAgent?: (id: number) => void;
   updateTask?: (task: Task) => void;
+  updateTaskPartial?: (id: number, updates: Partial<Task>) => void;
   addTask?: (task: Task) => void;
   updateSession?: (session: Session) => void;
   addMessage?: (message: Message) => void;

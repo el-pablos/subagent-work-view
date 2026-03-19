@@ -63,6 +63,7 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
   onSessionChange,
 }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   // Convert Agent to CommunicationAgent format
   const communicationAgents: CommunicationAgent[] = agents.map((agent) => ({

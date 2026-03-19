@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import MessageBubble from "./MessageBubble";
 import MessageFilter from "./MessageFilter";
 import { Message, MessageChannel, Agent } from "./types";
