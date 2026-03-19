@@ -23,7 +23,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   const [internalValue, setInternalValue] = useState(controlledValue || "");
   const [isFocused, setIsFocused] = useState(false);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync with controlled value

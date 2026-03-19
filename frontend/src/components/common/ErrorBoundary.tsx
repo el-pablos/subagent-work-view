@@ -111,42 +111,41 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               </p>
 
               {/* Error details (collapsible in production) */}
-              {process.env.NODE_ENV === "development" &&
-                this.state.errorInfo && (
-                  <details
+              {import.meta.env.DEV && this.state.errorInfo && (
+                <details
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px",
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                  }}
+                >
+                  <summary
                     style={{
-                      marginBottom: "16px",
-                      padding: "12px",
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      borderRadius: "4px",
-                      fontSize: "12px",
+                      cursor: "pointer",
+                      color: "#991b1b",
+                      fontWeight: 500,
                     }}
                   >
-                    <summary
-                      style={{
-                        cursor: "pointer",
-                        color: "#991b1b",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Error Details
-                    </summary>
-                    <pre
-                      style={{
-                        marginTop: "8px",
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        color: "#7f1d1d",
-                        fontSize: "11px",
-                        lineHeight: "1.4",
-                      }}
-                    >
-                      {this.state.error?.stack}
-                      {"\n\nComponent Stack:"}
-                      {this.state.errorInfo.componentStack}
-                    </pre>
-                  </details>
-                )}
+                    Error Details
+                  </summary>
+                  <pre
+                    style={{
+                      marginTop: "8px",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      color: "#7f1d1d",
+                      fontSize: "11px",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {this.state.error?.stack}
+                    {"\n\nComponent Stack:"}
+                    {this.state.errorInfo.componentStack}
+                  </pre>
+                </details>
+              )}
 
               {/* Recovery Button */}
               <button

@@ -164,7 +164,6 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
                 agents={communicationAgents}
                 onSendCommand={onSendCommand}
                 onSubscribe={onMessageSubscribe}
-                isConnected={isConnected}
                 showFilter={!isMobile} // Hide filter on mobile to save space
               />
             </div>
