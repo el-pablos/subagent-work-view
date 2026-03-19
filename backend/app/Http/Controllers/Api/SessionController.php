@@ -25,7 +25,10 @@ class SessionController extends Controller
     {
         $sessions = Session::query()
             ->withCount('tasks')
-            ->with('tasks.assignedAgent')
+            ->with([
+                'tasks.assignedAgent',
+                'creator:id,name,email', // Eager load creator to avoid N+1
+            ])
             ->when($request->status, fn($q, $status) => $q->where('status', $status))
             ->when($request->source, fn($q, $source) => $q->where('command_source', $source))
             ->when($request->search, fn($q, $search) => $q->where('original_command', 'like', "%{$search}%"))

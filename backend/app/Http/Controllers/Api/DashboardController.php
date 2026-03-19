@@ -71,7 +71,10 @@ class DashboardController extends Controller
 
     public function activeSessions(): JsonResponse
     {
-        $sessions = Session::with(['tasks', 'creator'])
+        $sessions = Session::with([
+                'tasks.assignedAgent', // Eager load assigned agents to avoid N+1
+                'creator:id,name,email',
+            ])
             ->whereIn('status', [
                 SessionStatus::QUEUED,
                 SessionStatus::PLANNING,
