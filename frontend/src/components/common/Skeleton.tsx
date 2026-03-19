@@ -6,6 +6,7 @@ export interface SkeletonProps {
   variant?: "text" | "circular" | "rectangular" | "rounded";
   className?: string;
   animation?: "pulse" | "wave" | "none";
+  style?: React.CSSProperties;
 }
 
 const Skeleton: React.FC<SkeletonProps> = ({
@@ -14,12 +15,14 @@ const Skeleton: React.FC<SkeletonProps> = ({
   variant = "rectangular",
   className = "",
   animation = "pulse",
+  style,
 }) => {
   const getVariantStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {
       width: typeof width === "number" ? `${width}px` : width,
       height: typeof height === "number" ? `${height}px` : height,
       backgroundColor: "#374151", // gray-700
+      ...style,
     };
 
     switch (variant) {
