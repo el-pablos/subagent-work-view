@@ -51,7 +51,6 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
     MessageChannel | "all"
   >("all");
   const [autoScroll, setAutoScroll] = useState(true);
-  const [typingAgents, setTypingAgents] = useState<Set<string>>(new Set());
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,13 +64,14 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
   const handleMessageCreated = useCallback(
     (event: MessageCreatedEvent) => {
       // Track new message for animation
-      setNewMessageIds((prev) => new Set([...prev, event.message.id]));
+      const messageId = String(event.message.id);
+      setNewMessageIds((prev) => new Set([...prev, messageId]));
 
       // Clear animation flag after animation completes
       setTimeout(() => {
         setNewMessageIds((prev) => {
           const next = new Set(prev);
-          next.delete(event.message.id);
+          next.delete(messageId);
           return next;
         });
       }, 500);

@@ -9,6 +9,7 @@ import type { Task, TaskHistoryEvent } from "../../types/task";
 import CommunicationLogPanel from "../communication/CommunicationLogPanel";
 import TaskTimeline from "../tasks/TaskTimeline";
 import CommandConsole from "../communication/CommandConsole";
+import { useResponsive } from "../../hooks";
 import type {
   Message,
   Agent as CommunicationAgent,
