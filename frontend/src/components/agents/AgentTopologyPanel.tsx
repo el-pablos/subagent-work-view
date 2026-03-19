@@ -272,7 +272,7 @@ const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
   return (
     <section
       aria-labelledby="agent-topology-title"
-      className={`glass-panel noise-overlay flex flex-col rounded-lg ${className}`}
+      className={`glass-panel glow-border noise-overlay flex flex-col rounded-lg ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-700/50 bg-slate-900/75 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
@@ -312,7 +312,7 @@ const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
       </div>
 
       {/* Source filter buttons */}
-      <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-900/60 px-3 py-2 sm:px-4">
+      <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-900/60 px-3 py-2 backdrop-blur-sm sm:px-4">
         <span className="text-[10px] font-medium text-slate-400 sm:text-xs">Filter:</span>
         <div className="flex gap-1" role="group" aria-label="Filter agents by source">
           <button

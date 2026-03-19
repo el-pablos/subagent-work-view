@@ -103,7 +103,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           ? { duration: 0 }
           : { type: "spring", stiffness: 260, damping: 24 }
       }
-      className={`glow-border min-h-[48px] rounded-xl border border-slate-700/50 bg-slate-900/70 backdrop-blur-xl transition-colors hover:border-cyan-400/20 ${className}`}
+      className={`glow-border noise-overlay min-h-[48px] rounded-xl border border-slate-700/50 bg-slate-900/70 backdrop-blur-xl transition-colors hover:border-cyan-400/20 ${className}`}
     >
       <button
         type="button"

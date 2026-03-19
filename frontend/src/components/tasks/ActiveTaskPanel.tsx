@@ -65,7 +65,7 @@ const ActiveTaskPanel: React.FC<ActiveTaskPanelProps> = ({
   return (
     <section
       aria-labelledby="tasks-heading"
-      className={`glass-panel noise-overlay rounded-lg ${className}`}
+      className={`glass-panel glow-border noise-overlay rounded-lg ${className}`}
     >
       {/* Header */}
       <div className="border-b border-slate-700/50 bg-slate-900/75 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
@@ -164,7 +164,7 @@ const ActiveTaskPanel: React.FC<ActiveTaskPanelProps> = ({
 
       {/* Footer with summary */}
       {tasks.length > 0 && (
-        <div className="border-t border-slate-700/50 bg-slate-900/60 px-4 py-2">
+        <div className="border-t border-slate-700/50 bg-slate-900/60 px-4 py-2 backdrop-blur-sm">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Total: {tasks.length} tasks</span>
             <span>
