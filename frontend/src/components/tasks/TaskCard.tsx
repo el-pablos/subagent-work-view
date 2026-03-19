@@ -109,26 +109,28 @@ const TaskCard: React.FC<TaskCardProps> = ({
         type="button"
         onClick={() => onClick?.(task)}
         aria-label={`${task.title}, ${statusBadge.label}, ${task.progress}% progress`}
-        className="min-h-[48px] w-full rounded-xl p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        className="min-h-[48px] w-full rounded-xl p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 sm:p-4"
       >
         <div className="mb-2 flex items-start justify-between">
-          <h3 className="mr-2 flex-1 truncate text-sm font-medium text-white">
+          <h3 className="mr-2 flex-1 truncate text-xs font-medium text-white sm:text-sm">
             {task.title}
           </h3>
           <span
-            className={`rounded px-2 py-0.5 text-xs font-medium ${statusBadge.bg} ${statusBadge.text}`}
+            className={`rounded px-2 py-0.5 text-[10px] font-medium sm:text-xs ${statusBadge.bg} ${statusBadge.text}`}
           >
             {statusBadge.label}
           </span>
         </div>
 
         {task.description && (
-          <p className="mb-3 line-clamp-2 text-xs text-slate-300">{task.description}</p>
+          <p className="mb-3 line-clamp-2 text-[11px] text-slate-300 sm:text-xs">
+            {task.description}
+          </p>
         )}
 
         {task.assignedAgent && (
           <div className="mb-3 flex items-center">
-            <div className="mr-2 flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-slate-700">
+            <div className="mr-2 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full bg-slate-700 sm:h-6 sm:w-6">
               {task.assignedAgent.avatar ? (
                 <img
                   src={task.assignedAgent.avatar}
@@ -136,12 +138,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="text-xs font-medium text-slate-200">
+                <span className="text-[10px] font-medium text-slate-200 sm:text-xs">
                   {task.assignedAgent.name.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
-            <span className="text-xs text-slate-300">{task.assignedAgent.name}</span>
+            <span className="text-[11px] text-slate-300 sm:text-xs">
+              {task.assignedAgent.name}
+            </span>
           </div>
         )}
 
@@ -152,7 +156,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           className="mb-3"
         />
 
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex flex-col gap-1 text-[11px] text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
           <span>Started: {task.startedAt ? formatTimestamp(task.startedAt) : "-"}</span>
           <span className="font-medium text-slate-300">{elapsed}</span>
         </div>

@@ -166,13 +166,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={`${className} mb-1.5 flex rounded-xl border px-3 py-2.5 text-sm backdrop-blur-sm ${colors.bg} ${colors.border}`}
+      className={`${className} mb-2 flex rounded-xl border px-3.5 py-3 text-sm backdrop-blur-sm sm:px-3 sm:py-2.5 ${colors.bg} ${colors.border}`}
     >
       {/* Avatar */}
       <div
         style={{
-          width: "38px",
-          height: "38px",
+          width: "42px",
+          height: "42px",
           borderRadius: "50%",
           backgroundColor: avatarColor,
           display: "flex",
@@ -202,7 +202,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
 
       {/* Message content */}
-      <div className="ml-3 min-w-0 flex-1">
+      <div className="ml-3.5 min-w-0 flex-1">
         {/* Header: name, type badge, recipient, channel */}
         <div className="mb-1 flex flex-wrap items-center gap-1.5">
           <span className="text-sm font-semibold text-white">
@@ -268,7 +268,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
 
         {/* Timestamp */}
-        <div className={`mt-1.5 flex items-center gap-1 text-[11px] ${colors.subtleText}`}>
+        <div className={`mt-2 flex items-center gap-1 text-[11px] ${colors.subtleText}`}>
           <svg
             width="12"
             height="12"

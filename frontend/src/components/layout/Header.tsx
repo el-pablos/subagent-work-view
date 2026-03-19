@@ -1,5 +1,5 @@
 import React from "react";
-import { Activity, Cpu } from "lucide-react";
+import { Activity, Cpu, Menu, RefreshCcw } from "lucide-react";
 import { NotificationBell } from "../common";
 
 export type ConnectionStatus = "connected" | "connecting" | "disconnected";
@@ -48,20 +48,22 @@ const Header: React.FC<HeaderProps> = ({
   const statusConfig = getConnectionStatusConfig(connectionStatus);
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-3">
-      <div className="flex items-center justify-between gap-2">
-        {/* Logo and Title */}
-        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-shrink">
-          <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
-            {/* Logo Icon */}
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+    <header className="border-b border-slate-800 bg-slate-900 px-3 py-2 sm:px-4 sm:py-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/70 text-slate-300 lg:hidden">
+            <Menu aria-hidden="true" className="h-[18px] w-[18px]" />
+          </div>
+
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 sm:h-10 sm:w-10">
               <svg
-                aria-hidden="true"
-                className="w-4 h-4 sm:w-5 sm:h-5 text-white"
+                className="h-5 w-5 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -71,97 +73,97 @@ const Header: React.FC<HeaderProps> = ({
               </svg>
             </div>
             <div className="min-w-0">
-              <h1 className="text-fluid-base sm:text-fluid-xl font-semibold text-white tracking-tight truncate">
+              <h1 className="truncate text-sm font-bold tracking-tight text-white sm:text-base lg:text-lg">
                 SubAgent Work View
               </h1>
-              <p className="text-fluid-xs sm:text-fluid-sm text-slate-400 -mt-0.5 hidden sm:block">
+              <p className="hidden text-xs text-slate-400 sm:block">
                 Real-time Multi-Agent Dashboard
               </p>
+
+              {sessionId ? (
+                <div className="mt-1 flex items-center gap-2 lg:hidden">
+                  <span className="rounded-md border border-slate-700 bg-slate-800/70 px-2 py-1 text-[10px] text-slate-300">
+                    Session
+                  </span>
+                  <code className="max-w-[140px] truncate rounded-md border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 text-[10px] font-mono text-cyan-300">
+                    {sessionId}
+                  </code>
+                  {onSessionChange ? (
+                    <button
+                      type="button"
+                      onClick={() => onSessionChange("")}
+                      className="rounded-md p-1 text-slate-400 transition-colors hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      aria-label="Change session"
+                    >
+                      <RefreshCcw className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
 
-        {/* Center: Session Indicator - Hidden on mobile */}
-        <div className="hidden lg:flex items-center space-x-3">
-          {sessionId && (
-            <div className="flex items-center space-x-2 bg-slate-800/50 rounded-lg px-3 py-1.5">
-              <span className="text-fluid-xs text-slate-400">Session:</span>
-              <code className="text-fluid-xs font-mono tabular-nums text-cyan-400">
-                {sessionId.slice(0, 8)}...
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
+          {sessionId ? (
+            <div className="hidden items-center gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-3 py-2 lg:flex">
+              <span className="text-xs text-slate-400">Session:</span>
+              <code className="max-w-[180px] truncate text-xs font-mono text-cyan-400">
+                {sessionId}
               </code>
-              {onSessionChange && (
+              {onSessionChange ? (
                 <button
+                  type="button"
                   onClick={() => onSessionChange("")}
-                  className="rounded text-slate-400 transition-colors hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-                  title="Change session"
+                  className="rounded-md p-1 text-slate-400 transition-colors hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                   aria-label="Change session"
                 >
-                  <svg
-                    aria-hidden="true"
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
+                  <RefreshCcw className="h-3.5 w-3.5" />
                 </button>
-              )}
+              ) : null}
             </div>
-          )}
-        </div>
+          ) : null}
 
-        {/* Right: Status and Stats */}
-        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-          {/* Notification Bell */}
-          <NotificationBell />
-
-          {/* Quick Stats */}
-          <div className="flex items-center space-x-1.5 sm:space-x-3">
-            {/* Active Agents */}
-            <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-800/50 rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
-              <Cpu
-                aria-hidden="true"
-                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500"
-              />
-               <span className="text-[10px] sm:text-fluid-xs text-slate-400 hidden sm:inline">Agents:</span>
-               <span className="tabular-nums text-fluid-sm sm:text-fluid-base font-semibold text-white">
-                 {activeAgentCount}
-               </span>
+          <div className="flex items-start justify-between gap-2 sm:items-center lg:justify-end lg:gap-3">
+            <div className="hidden sm:block">
+              <NotificationBell />
             </div>
 
-            {/* Running Tasks */}
-            <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-800/50 rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
-              <Activity
-                aria-hidden="true"
-                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500"
-              />
-               <span className="text-[10px] sm:text-fluid-xs text-slate-400 hidden sm:inline">Tasks:</span>
-               <span className="tabular-nums text-fluid-sm sm:text-fluid-base font-semibold text-white">
-                 {runningTaskCount}
-               </span>
-            </div>
-          </div>
+            <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:flex-none sm:items-center">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-3 py-2 sm:min-w-[110px] sm:justify-start">
+                <div className="flex items-center gap-2">
+                  <Cpu aria-hidden="true" className="h-3.5 w-3.5 text-violet-400" />
+                  <span className="text-[11px] text-slate-400">Agents</span>
+                </div>
+                <span className="text-sm font-semibold text-white">
+                  {activeAgentCount}
+                </span>
+              </div>
 
-          {/* Connection Status */}
-          <div className="flex items-center space-x-1.5 sm:space-x-2">
-            <div className="relative">
-              <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${statusConfig.color}`}>
-                {connectionStatus === "connected" && (
-                  <div
-                    className={`absolute inset-0 rounded-full ${statusConfig.pulseColor} animate-ping opacity-75`}
-                  />
-                )}
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-3 py-2 sm:min-w-[110px] sm:justify-start">
+                <div className="flex items-center gap-2">
+                  <Activity aria-hidden="true" className="h-3.5 w-3.5 text-sky-400" />
+                  <span className="text-[11px] text-slate-400">Tasks</span>
+                </div>
+                <span className="text-sm font-semibold text-white">
+                  {runningTaskCount}
+                </span>
               </div>
             </div>
-            <span className={`text-[10px] sm:text-fluid-xs font-medium ${statusConfig.textColor} hidden sm:inline`}>
-              {statusConfig.text}
-            </span>
+
+            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-3 py-2">
+              <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                <span className={`h-2.5 w-2.5 rounded-full ${statusConfig.color}`} />
+                {connectionStatus === "connected" ? (
+                  <span
+                    className={`absolute inset-0 rounded-full ${statusConfig.pulseColor} animate-ping opacity-75`}
+                  />
+                ) : null}
+              </span>
+              <span className={`text-[11px] font-medium ${statusConfig.textColor}`}>
+                {statusConfig.text}
+              </span>
+            </div>
           </div>
         </div>
       </div>
