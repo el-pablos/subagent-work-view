@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/shallow";
 import { immer } from "zustand/middleware/immer";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { Session, SessionStatus } from "../types";
 
 interface SessionState {

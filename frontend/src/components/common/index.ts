@@ -4,6 +4,8 @@ export { default as ProgressBar } from "./ProgressBar";
 export { default as ProgressSteps } from "./ProgressSteps";
 export { default as AlertToast, AlertToastManager } from "./AlertToast";
 export { default as Skeleton } from "./Skeleton";
+export { default as ErrorBoundary } from "./ErrorBoundary";
+export { default as AsyncBoundary } from "./AsyncBoundary";
 export { default as RelativeTime } from "./RelativeTime";
 export { default as Duration } from "./Duration";
 export { default as Timestamp } from "./Timestamp";
