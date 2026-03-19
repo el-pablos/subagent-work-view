@@ -1,0 +1,229 @@
+import React from "react";
+import { TaskHistoryEvent } from "../../types/task";
+
+interface TaskTimelineProps {
+  events: TaskHistoryEvent[];
+  className?: string;
+}
+
+const getEventIcon = (type: TaskHistoryEvent["type"]): string => {
+  switch (type) {
+    case "created":
+      return "●";
+    case "assigned":
+      return "◉";
+    case "started":
+      return "▶";
+    case "progress":
+      return "◐";
+    case "completed":
+      return "✓";
+    case "failed":
+      return "✗";
+    case "status_change":
+      return "↻";
+    default:
+      return "●";
+  }
+};
+
+const getEventColor = (
+  type: TaskHistoryEvent["type"],
+): { bg: string; border: string; text: string } => {
+  switch (type) {
+    case "created":
+      return {
+        bg: "bg-gray-700",
+        border: "border-gray-400",
+        text: "text-gray-400",
+      };
+    case "assigned":
+      return {
+        bg: "bg-purple-900/50",
+        border: "border-purple-400",
+        text: "text-purple-400",
+      };
+    case "started":
+      return {
+        bg: "bg-emerald-900/50",
+        border: "border-emerald-400",
+        text: "text-emerald-400",
+      };
+    case "progress":
+      return {
+        bg: "bg-cyan-900/50",
+        border: "border-cyan-400",
+        text: "text-cyan-400",
+      };
+    case "completed":
+      return {
+        bg: "bg-sky-900/50",
+        border: "border-sky-400",
+        text: "text-sky-400",
+      };
+    case "failed":
+      return {
+        bg: "bg-rose-900/50",
+        border: "border-rose-400",
+        text: "text-rose-400",
+      };
+    case "status_change":
+      return {
+        bg: "bg-amber-900/50",
+        border: "border-amber-400",
+        text: "text-amber-400",
+      };
+    default:
+      return {
+        bg: "bg-gray-700",
+        border: "border-gray-400",
+        text: "text-gray-400",
+      };
+  }
+};
+
+const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
+
+const formatEventLabel = (event: TaskHistoryEvent): string => {
+  switch (event.type) {
+    case "created":
+      return "Created";
+    case "assigned":
+      return "Assigned";
+    case "started":
+      return "Started";
+    case "progress":
+      return `${event.data?.progress || 0}%`;
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    case "status_change":
+      return event.data?.status || "Changed";
+    default:
+      return "Event";
+  }
+};
+
+const calculateDuration = (
+  events: TaskHistoryEvent[],
+  currentIndex: number,
+): string | null => {
+  if (currentIndex === 0) return null;
+
+  const currentTime = new Date(events[currentIndex].timestamp).getTime();
+  const previousTime = new Date(events[currentIndex - 1].timestamp).getTime();
+  const diffMs = currentTime - previousTime;
+
+  if (diffMs < 1000) return `${diffMs}ms`;
+  if (diffMs < 60000) return `${Math.floor(diffMs / 1000)}s`;
+  return `${Math.floor(diffMs / 60000)}m`;
+};
+
+const TaskTimeline: React.FC<TaskTimelineProps> = ({
+  events,
+  className = "",
+}) => {
+  if (events.length === 0) {
+    return (
+      <div className={`text-gray-500 text-sm text-center py-4 ${className}`}>
+        No timeline events
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      {/* Horizontal scrollable container */}
+      <div className="overflow-x-auto pb-4">
+        <div className="flex items-start min-w-max px-4">
+          {events.map((event, index) => {
+            const eventColor = getEventColor(event.type);
+            const duration = calculateDuration(events, index);
+            const isLast = index === events.length - 1;
+
+            return (
+              <div key={event.id} className="flex items-center">
+                {/* Event node */}
+                <div className="flex flex-col items-center">
+                  {/* Event circle */}
+                  <div
+                    className={`relative w-10 h-10 rounded-full ${eventColor.bg} border-2 ${eventColor.border} flex items-center justify-center ${eventColor.text} text-sm font-medium z-10 transition-all hover:scale-110`}
+                  >
+                    {getEventIcon(event.type)}
+                    {/* Pulse animation for last event if in progress */}
+                    {isLast && event.type === "started" && (
+                      <div
+                        className={`absolute inset-0 rounded-full ${eventColor.border} border-2 animate-ping opacity-30`}
+                      />
+                    )}
+                  </div>
+
+                  {/* Event label */}
+                  <div className="mt-2 text-center">
+                    <span className={`text-xs font-medium ${eventColor.text}`}>
+                      {formatEventLabel(event)}
+                    </span>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {formatTimestamp(event.timestamp)}
+                    </p>
+                    {/* Agent info */}
+                    {event.data?.agent && (
+                      <div className="flex items-center justify-center mt-1">
+                        <div className="w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center mr-1">
+                          <span className="text-[8px] text-gray-300">
+                            {event.data.agent.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-gray-500">
+                          {event.data.agent.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Connection line */}
+                {!isLast && (
+                  <div className="flex flex-col items-center mx-2">
+                    <div className="h-0.5 w-16 bg-gradient-to-r from-gray-600 to-gray-700 relative">
+                      {/* Arrow */}
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-gray-600 border-y-[4px] border-y-transparent" />
+                    </div>
+                    {/* Duration label */}
+                    {duration && (
+                      <span className="text-[10px] text-gray-600 mt-1">
+                        +{duration}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Time markers at the bottom */}
+      {events.length >= 2 && (
+        <div className="flex justify-between px-4 mt-2 border-t border-gray-800 pt-2">
+          <div className="text-xs text-gray-600">
+            Start: {formatTimestamp(events[0].timestamp)}
+          </div>
+          <div className="text-xs text-gray-600">
+            Latest: {formatTimestamp(events[events.length - 1].timestamp)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TaskTimeline;

@@ -1,0 +1,271 @@
+import React, {
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { motion } from "framer-motion";
+import { Network } from "lucide-react";
+import type { Agent, AgentConnection, AgentNodePosition } from "./types";
+import AgentNode from "./AgentNode";
+
+interface AgentTopologyPanelProps {
+  agents: Agent[];
+  connections?: AgentConnection[];
+  selectedAgentId?: string;
+  onAgentSelect?: (agent: Agent) => void;
+  className?: string;
+}
+
+const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
+  agents,
+  connections = [],
+  selectedAgentId,
+  onAgentSelect,
+  className = "",
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  // Update container size on mount and resize
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setContainerSize({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight,
+        });
+      }
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  // Calculate node positions in a circular layout
+  const nodePositions = useMemo((): AgentNodePosition[] => {
+    if (agents.length === 0 || containerSize.width === 0) return [];
+
+    const nodeSize = 64;
+    const padding = 60;
+    const centerX = containerSize.width / 2;
+    const centerY = (containerSize.height - 60) / 2; // Account for header
+
+    // For a single agent, place in center
+    if (agents.length === 1) {
+      return [
+        {
+          id: agents[0].id,
+          x: centerX - nodeSize / 2,
+          y: centerY - nodeSize / 2,
+        },
+      ];
+    }
+
+    // For multiple agents, arrange in a circle
+    const radius = Math.min(
+      (containerSize.width - padding * 2 - nodeSize) / 2,
+      (containerSize.height - 100 - padding * 2 - nodeSize) / 2,
+      150,
+    );
+
+    return agents.map((agent, index) => {
+      const angle = (2 * Math.PI * index) / agents.length - Math.PI / 2;
+      return {
+        id: agent.id,
+        x: centerX + radius * Math.cos(angle) - nodeSize / 2,
+        y: centerY + radius * Math.sin(angle) - nodeSize / 2,
+      };
+    });
+  }, [agents, containerSize]);
+
+  // Get position by agent ID
+  const getPositionById = useCallback(
+    (id: string): AgentNodePosition | undefined => {
+      return nodePositions.find((pos) => pos.id === id);
+    },
+    [nodePositions],
+  );
+
+  // Render connection lines between agents
+  const renderConnections = () => {
+    return connections.map((connection, index) => {
+      const fromPos = getPositionById(connection.fromId);
+      const toPos = getPositionById(connection.toId);
+
+      if (!fromPos || !toPos) return null;
+
+      const nodeSize = 64;
+      const x1 = fromPos.x + nodeSize / 2;
+      const y1 = fromPos.y + nodeSize / 2;
+      const x2 = toPos.x + nodeSize / 2;
+      const y2 = toPos.y + nodeSize / 2;
+
+      return (
+        <g key={`connection-${index}`}>
+          {/* Background line */}
+          <line
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="#374151"
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
+          {/* Active connection animation */}
+          {connection.active && (
+            <motion.line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="#38bdf8"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeDasharray="8 4"
+              initial={{ strokeDashoffset: 0 }}
+              animate={{ strokeDashoffset: -24 }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          )}
+          {/* Connection dots at endpoints */}
+          {connection.active && (
+            <>
+              <motion.circle
+                cx={x1}
+                cy={y1}
+                r={4}
+                fill="#38bdf8"
+                initial={{ scale: 0.8, opacity: 0.5 }}
+                animate={{ scale: 1.2, opacity: 1 }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              />
+              <motion.circle
+                cx={x2}
+                cy={y2}
+                r={4}
+                fill="#38bdf8"
+                initial={{ scale: 1.2, opacity: 1 }}
+                animate={{ scale: 0.8, opacity: 0.5 }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              />
+            </>
+          )}
+        </g>
+      );
+    });
+  };
+
+  return (
+    <div
+      className={`bg-gray-900 border border-gray-800 rounded-lg flex flex-col ${className}`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+        <div className="flex items-center space-x-2">
+          <Network className="w-5 h-5 text-gray-400" />
+          <h2 className="text-sm font-semibold text-gray-100">
+            Agent Topology
+          </h2>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500">
+            {agents.length} agent{agents.length !== 1 ? "s" : ""}
+          </span>
+          {/* Status legend */}
+          <div className="flex items-center space-x-3 ml-4">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 rounded-full bg-slate-400" />
+              <span className="text-xs text-gray-500">Idle</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-xs text-gray-500">Busy</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 rounded-full bg-sky-500" />
+              <span className="text-xs text-gray-500">Communicating</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="text-xs text-gray-500">Error</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Topology visualization area */}
+      <div ref={containerRef} className="flex-1 relative min-h-[300px] p-4">
+        {/* SVG layer for connections */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 0 }}
+        >
+          {renderConnections()}
+        </svg>
+
+        {/* Agent nodes */}
+        {agents.map((agent) => {
+          const position = getPositionById(agent.id);
+          if (!position) return null;
+
+          return (
+            <motion.div
+              key={agent.id}
+              className="absolute"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                x: position.x,
+                y: position.y,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+              style={{ zIndex: 1 }}
+            >
+              <AgentNode
+                agent={agent}
+                isSelected={selectedAgentId === agent.id}
+                onClick={onAgentSelect}
+              />
+            </motion.div>
+          );
+        })}
+
+        {/* Empty state */}
+        {agents.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <Network className="w-12 h-12 text-gray-700 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No agents connected</p>
+              <p className="text-xs text-gray-600 mt-1">
+                Agents will appear here when they join the session
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AgentTopologyPanel;

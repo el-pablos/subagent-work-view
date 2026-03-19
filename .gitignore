@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment
+.env
+
+# Storage
+storage/mysql/*
+storage/redis/*
+*.log
+
+# OS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
