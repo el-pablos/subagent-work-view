@@ -22,8 +22,8 @@ import {
 import type { Agent, Task, Session } from "./types";
 
 function App() {
-  const agents = useAgentStore((s) => Object.values(s.agents));
-  const tasks = useTaskStore((s) => Object.values(s.tasks));
+  const agentRecords = useAgentStore((s) => s.agents);
+  const taskRecords = useTaskStore((s) => s.tasks);
   const messages = useMessageStore((s) => s.messages);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const selectAgent = useAgentStore((s) => s.selectAgent);
@@ -33,6 +33,8 @@ function App() {
   const setSessions = useSessionStore((s) => s.setSessions);
   const setActiveSession = useSessionStore((s) => s.setActiveSession);
   const addNotification = useNotificationStore((s) => s.addNotification);
+  const agents = useMemo(() => Object.values(agentRecords), [agentRecords]);
+  const tasks = useMemo(() => Object.values(taskRecords), [taskRecords]);
 
   // Hydrate stores from API on mount
   useEffect(() => {
@@ -91,6 +93,15 @@ function App() {
   const connectionStatus = useMemo(() => {
     return connectionState as "connected" | "connecting" | "disconnected";
   }, [connectionState]);
+  const commandSuggestions = useMemo(
+    () => [
+      { command: "/help", description: "Tampilkan perintah yang tersedia" },
+      { command: "/status", description: "Status sesi saat ini" },
+      { command: "/agents", description: "Daftar agent aktif" },
+      { command: "/tasks", description: "Daftar semua task" },
+    ],
+    [],
+  );
 
   const handleAgentSelect = useCallback(
     (agent: UIAgent) => {
@@ -128,12 +139,7 @@ function App() {
         onTaskClick={handleTaskClick}
         messages={uiMessages}
         onSendCommand={handleSendCommand}
-        commandSuggestions={[
-          { command: "/help", description: "Tampilkan perintah yang tersedia" },
-          { command: "/status", description: "Status sesi saat ini" },
-          { command: "/agents", description: "Daftar agent aktif" },
-          { command: "/tasks", description: "Daftar semua task" },
-        ]}
+        commandSuggestions={commandSuggestions}
         onSearch={handleSearch}
       />
       <ToastContainer />

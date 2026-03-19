@@ -1,41 +1,20 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './test-helpers.ts';
 
-test.describe('Accessibility', () => {
-  test('should have semantic landmarks', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Check for presence of semantic HTML5 landmarks
-    // At least one of these should exist in the app
-    const main = page.locator('main');
-    const nav = page.locator('nav');
-    
-    // Main content area should exist
-    const mainCount = await main.count();
-    const navCount = await nav.count();
-    
-    // At least main or nav should be present (structural requirement)
-    expect(mainCount + navCount).toBeGreaterThan(0);
+test.describe('basic accessibility checks', () => {
+  test('semantic landmarks exist', async ({ page }) => {
+    await gotoHome(page, { width: 1280, height: 900 });
+    await expect(page.locator('header[aria-label="Dashboard header"]')).toBeVisible();
+    await expect(page.locator('main[aria-label="Dashboard content"]')).toBeVisible();
   });
 
-  test('should not have images with empty alt attributes', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Find all img elements
-    const images = page.locator('img');
-    const imageCount = await images.count();
-    
-    // Check each image - if alt attribute exists, it should not be empty
-    for (let i = 0; i < imageCount; i++) {
-      const img = images.nth(i);
-      const alt = await img.getAttribute('alt');
-      
-      // If image has alt attribute, it should not be empty string
-      // (null is acceptable for decorative images handled by aria-hidden or role="presentation")
-      if (alt !== null) {
-        expect(alt.trim().length).toBeGreaterThan(0);
-      }
+  test('no rendered images have empty alt text', async ({ page }) => {
+    await gotoHome(page, { width: 1280, height: 900 });
+    const images = page.locator('img:not([role="presentation"])');
+    const count = await images.count();
+    for (let i = 0; i < count; i++) {
+      const alt = await images.nth(i).getAttribute('alt');
+      expect(alt?.trim().length ?? 0).toBeGreaterThan(0);
     }
   });
 });

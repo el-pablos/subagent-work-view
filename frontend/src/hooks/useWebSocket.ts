@@ -423,13 +423,14 @@ export interface UseWebSocketWithStoreOptions {
 }
 
 export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
-  const storeAgents = useAgentStore((state) => Object.values(state.agents));
+  const storeAgentRecords = useAgentStore((state) => state.agents);
   const storeUpdateAgent = useAgentStore((state) => state.updateAgent);
   const storeAddTask = useTaskStore((state) => state.addTask);
   const storeUpdateTask = useTaskStore((state) => state.updateTask);
   const storeAddSession = useSessionStore((state) => state.addSession);
   const storeUpdateSession = useSessionStore((state) => state.updateSession);
   const storeAddMessage = useMessageStore((state) => state.addMessage);
+  const storeAgents = useMemo(() => Object.values(storeAgentRecords), [storeAgentRecords]);
 
   const updateAgent = options.updateAgent ?? storeUpdateAgent;
   const addTask = options.addTask ?? storeAddTask;

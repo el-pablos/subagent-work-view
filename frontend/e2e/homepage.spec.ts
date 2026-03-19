@@ -1,28 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './test-helpers.ts';
 
-test.describe('Homepage', () => {
-  test('should load the page successfully', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveURL('/');
-  });
-
-  test('should have correct page title', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveTitle(/Subagent Work View/i);
-  });
-
-  test('should display main layout structure', async ({ page }) => {
-    await page.goto('/');
-    
-    // Wait for app to render
-    await page.waitForLoadState('networkidle');
-    
-    // Check for main structural elements without asserting specific content
-    const main = page.locator('main');
-    await expect(main).toBeVisible();
-    
-    // Layout should have visible content
-    const body = page.locator('body');
-    await expect(body).toBeVisible();
-  });
+test('homepage loads with title and core layout visible', async ({ page }) => {
+  await gotoHome(page, { width: 1280, height: 900 });
+  await expect(page).toHaveTitle(/SubAgent Work View/i);
+  await expect(page.locator('header[aria-label="Dashboard header"]')).toBeVisible();
+  await expect(page.locator('main[aria-label="Dashboard content"]')).toBeVisible();
 });
