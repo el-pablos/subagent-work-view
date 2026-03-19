@@ -5,7 +5,7 @@
  * Remember to implement Cmd/Ctrl+K shortcut in the parent component.
  */
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { CommandPalette, type Agent } from "./CommandPalette";
 
 export function CommandPaletteExample() {
@@ -16,23 +16,14 @@ export function CommandPaletteExample() {
     {
       id: "agent-1",
       name: "Code Reviewer",
-      type: "code-review",
-      status: "running",
-      description: "Reviewing pull request #123",
     },
     {
       id: "agent-2",
       name: "Explorer",
-      type: "explore",
-      status: "idle",
-      description: "Ready to explore codebase",
     },
     {
       id: "agent-3",
       name: "Task Runner",
-      type: "task",
-      status: "completed",
-      description: "Completed build process",
     },
   ];
 

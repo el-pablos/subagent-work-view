@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { Task, TaskStatus } from "../types";
+import type { Task, TaskStatus } from "../types";
 
 interface TaskState {
   tasks: Record<number, Task>;

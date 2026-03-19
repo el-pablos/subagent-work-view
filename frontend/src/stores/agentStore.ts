@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { Agent, AgentStatus } from "../types";
+import type { Agent, AgentStatus } from "../types";
 
 interface AgentState {
   agents: Record<number, Agent>;

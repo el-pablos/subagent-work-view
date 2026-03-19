@@ -1,15 +1,14 @@
-import React from "react";
 import { useNotificationStore } from "../../stores/notificationStore";
 
 /**
  * Demo component untuk test notification system
  * Bisa digunakan untuk development testing
  */
-const NotificationDemo: React.FC = () => {
-  const { addToast, addNotification } = useNotificationStore();
+const NotificationDemo = () => {
+  const addNotification = useNotificationStore((state) => state.addNotification);
 
   const handleToastSuccess = () => {
-    addToast({
+    addNotification({
       type: "success",
       title: "Berhasil!",
       message: "Operasi telah berhasil dijalankan",
@@ -18,7 +17,7 @@ const NotificationDemo: React.FC = () => {
   };
 
   const handleToastError = () => {
-    addToast({
+    addNotification({
       type: "error",
       title: "Error!",
       message: "Terjadi kesalahan saat memproses request",
@@ -27,7 +26,7 @@ const NotificationDemo: React.FC = () => {
   };
 
   const handleToastWarning = () => {
-    addToast({
+    addNotification({
       type: "warning",
       title: "Perhatian!",
       message: "Anda memiliki perubahan yang belum disimpan",
@@ -36,7 +35,7 @@ const NotificationDemo: React.FC = () => {
   };
 
   const handleToastInfo = () => {
-    addToast({
+    addNotification({
       type: "info",
       title: "Info",
       message: "Update sistem akan dilakukan pada pukul 23:00",
@@ -45,7 +44,7 @@ const NotificationDemo: React.FC = () => {
   };
 
   const handleToastWithAction = () => {
-    addToast({
+    addNotification({
       type: "success",
       title: "Task Completed",
       message: "Task #1234 telah selesai dikerjakan",
@@ -78,7 +77,7 @@ const NotificationDemo: React.FC = () => {
   const handleMultipleToasts = () => {
     ["success", "error", "warning", "info"].forEach((type, index) => {
       setTimeout(() => {
-        addToast({
+        addNotification({
           type: type as "success" | "error" | "warning" | "info",
           title: `Toast ${index + 1}`,
           message: `This is ${type} toast notification`,

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { Session, SessionStatus } from "../types";
+import type { Session, SessionStatus } from "../types";
 
 interface SessionState {
   sessions: Record<number, Session>;

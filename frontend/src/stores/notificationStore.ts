@@ -1,168 +1,122 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-export type NotificationType = "success" | "error" | "warning" | "info";
+export type NotificationType =
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "agent_spawn"
+  | "agent_exit"
+  | "task_complete"
+  | "message";
 
-export interface Toast {
-  id: string;
-  type: NotificationType;
-  title?: string;
-  message: string;
-  duration?: number; // milliseconds, 0 for persistent
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-  timestamp: number;
+export interface NotificationAction {
+  label: string;
+  onClick: () => void;
 }
 
 export interface Notification {
   id: string;
   type: NotificationType;
   title: string;
-  message: string;
+  message?: string;
+  duration?: number;
   timestamp: number;
   read: boolean;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?: NotificationAction;
 }
 
 interface NotificationState {
-  toasts: Toast[];
-  notifications: Record<string, Notification>;
+  notifications: Notification[];
+  unreadCount: number;
   isDrawerOpen: boolean;
-  maxVisibleToasts: number;
-}
-
-interface NotificationActions {
-  // Toast actions
-  addToast: (toast: Omit<Toast, "id" | "timestamp">) => string;
-  removeToast: (id: string) => void;
-  clearAllToasts: () => void;
-
-  // Notification actions
-  addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => string;
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
+  ) => void;
+  removeNotification: (id: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
-  removeNotification: (id: string) => void;
-  clearAllNotifications: () => void;
-
-  // Drawer actions
+  clearAll: () => void;
+  toggleDrawer: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
-  toggleDrawer: () => void;
-
-  // Getters
-  getUnreadCount: () => number;
-  getRecentNotifications: (limit: number) => Notification[];
-  getVisibleToasts: () => Toast[];
 }
 
-const initialState: NotificationState = {
-  toasts: [],
-  notifications: {},
-  isDrawerOpen: false,
-  maxVisibleToasts: 5,
+const DEFAULT_DURATION = 5000;
+const MAX_NOTIFICATIONS = 100;
+
+const createNotificationId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `notif-${crypto.randomUUID()}`;
+  }
+
+  return `notif-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 };
 
-let toastIdCounter = 0;
-let notificationIdCounter = 0;
+const getUnreadCount = (notifications: Notification[]) =>
+  notifications.filter((notification) => !notification.read).length;
 
-const generateToastId = (): string => {
-  toastIdCounter += 1;
-  return `toast-${toastIdCounter}-${Date.now()}`;
-};
+export const useNotificationStore = create<NotificationState>()(
+  immer((set) => ({
+    notifications: [],
+    unreadCount: 0,
+    isDrawerOpen: false,
 
-const generateNotificationId = (): string => {
-  notificationIdCounter += 1;
-  return `notification-${notificationIdCounter}-${Date.now()}`;
-};
-
-export const useNotificationStore = create<NotificationState & NotificationActions>()(
-  immer((set, get) => ({
-    ...initialState,
-
-    // Toast actions
-    addToast: (toast) => {
-      const id = generateToastId();
-      const newToast: Toast = {
-        ...toast,
-        id,
-        timestamp: Date.now(),
-      };
-
+    addNotification: (notification) =>
       set((state) => {
-        state.toasts.push(newToast);
-        // Keep only the latest toasts if exceeds max
-        if (state.toasts.length > state.maxVisibleToasts * 2) {
-          state.toasts = state.toasts.slice(-state.maxVisibleToasts * 2);
+        state.notifications.unshift({
+          ...notification,
+          id: createNotificationId(),
+          timestamp: Date.now(),
+          read: false,
+          duration: notification.duration ?? DEFAULT_DURATION,
+        });
+
+        if (state.notifications.length > MAX_NOTIFICATIONS) {
+          state.notifications = state.notifications.slice(0, MAX_NOTIFICATIONS);
         }
-      });
 
-      // Auto-dismiss if duration is set
-      if (toast.duration && toast.duration > 0) {
-        setTimeout(() => {
-          get().removeToast(id);
-        }, toast.duration);
-      }
-
-      return id;
-    },
-
-    removeToast: (id) =>
-      set((state) => {
-        state.toasts = state.toasts.filter((t) => t.id !== id);
+        state.unreadCount = getUnreadCount(state.notifications);
       }),
 
-    clearAllToasts: () =>
+    removeNotification: (id) =>
       set((state) => {
-        state.toasts = [];
+        state.notifications = state.notifications.filter(
+          (notification) => notification.id !== id,
+        );
+        state.unreadCount = getUnreadCount(state.notifications);
       }),
-
-    // Notification actions
-    addNotification: (notification) => {
-      const id = generateNotificationId();
-      const newNotification: Notification = {
-        ...notification,
-        id,
-        timestamp: Date.now(),
-        read: false,
-      };
-
-      set((state) => {
-        state.notifications[id] = newNotification;
-      });
-
-      return id;
-    },
 
     markAsRead: (id) =>
       set((state) => {
-        if (state.notifications[id]) {
-          state.notifications[id].read = true;
+        const notification = state.notifications.find((item) => item.id === id);
+
+        if (notification && !notification.read) {
+          notification.read = true;
+          state.unreadCount = getUnreadCount(state.notifications);
         }
       }),
 
     markAllAsRead: () =>
       set((state) => {
-        Object.keys(state.notifications).forEach((id) => {
-          state.notifications[id].read = true;
+        state.notifications.forEach((notification) => {
+          notification.read = true;
         });
+        state.unreadCount = 0;
       }),
 
-    removeNotification: (id) =>
+    clearAll: () =>
       set((state) => {
-        delete state.notifications[id];
+        state.notifications = [];
+        state.unreadCount = 0;
       }),
 
-    clearAllNotifications: () =>
+    toggleDrawer: () =>
       set((state) => {
-        state.notifications = {};
+        state.isDrawerOpen = !state.isDrawerOpen;
       }),
 
-    // Drawer actions
     openDrawer: () =>
       set((state) => {
         state.isDrawerOpen = true;
@@ -172,28 +126,5 @@ export const useNotificationStore = create<NotificationState & NotificationActio
       set((state) => {
         state.isDrawerOpen = false;
       }),
-
-    toggleDrawer: () =>
-      set((state) => {
-        state.isDrawerOpen = !state.isDrawerOpen;
-      }),
-
-    // Getters
-    getUnreadCount: () => {
-      const state = get();
-      return Object.values(state.notifications).filter((n) => !n.read).length;
-    },
-
-    getRecentNotifications: (limit) => {
-      const state = get();
-      return Object.values(state.notifications)
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, limit);
-    },
-
-    getVisibleToasts: () => {
-      const state = get();
-      return state.toasts.slice(-state.maxVisibleToasts);
-    },
   })),
 );

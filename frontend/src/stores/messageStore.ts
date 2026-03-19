@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { Message, MessageChannel, MessageType } from "../types";
+import type { Message, MessageChannel, MessageType } from "../types";
 
 interface MessageState {
   messages: Message[];

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Command, CommandSuggestion } from "./types";
+import type { Command, CommandSuggestion } from "./types";
 
 interface CommandConsoleProps {
   onSubmit: (command: string) => void;

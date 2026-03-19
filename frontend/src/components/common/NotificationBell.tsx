@@ -1,48 +1,59 @@
-import React from "react";
+import { useEffect, useRef } from "react";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { Bell } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useNotificationStore } from "../../stores/notificationStore";
 
-const NotificationBell: React.FC = () => {
-  const { getUnreadCount, toggleDrawer } = useNotificationStore();
-  const unreadCount = getUnreadCount();
+export function NotificationBell() {
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const isDrawerOpen = useNotificationStore((state) => state.isDrawerOpen);
+  const toggleDrawer = useNotificationStore((state) => state.toggleDrawer);
+  const controls = useAnimation();
+  const previousUnreadCount = useRef(unreadCount);
+
+  useEffect(() => {
+    if (unreadCount > previousUnreadCount.current) {
+      void controls.start({
+        scale: [1, 1.12, 0.96, 1],
+        rotate: [0, -10, 10, -6, 0],
+        transition: { duration: 0.45, ease: "easeInOut" },
+      });
+    }
+
+    previousUnreadCount.current = unreadCount;
+  }, [controls, unreadCount]);
 
   return (
-    <button
+    <motion.button
+      type="button"
+      animate={controls}
       onClick={toggleDrawer}
-      className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500"
-      aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+      className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/70 text-slate-300 transition hover:border-slate-700 hover:bg-slate-800/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+      aria-label={
+        unreadCount > 0
+          ? `Buka notifikasi, ${unreadCount} belum dibaca`
+          : "Buka notifikasi"
+      }
+      aria-controls="notification-drawer"
+      aria-expanded={isDrawerOpen}
     >
-      <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+      <Bell className="h-4 w-4" aria-hidden="true" />
 
-      {/* Unread Badge */}
-      <AnimatePresence>
-        {unreadCount > 0 && (
+      <AnimatePresence initial={false}>
+        {unreadCount > 0 ? (
           <motion.span
-            key="badge"
-            initial={{ scale: 0, opacity: 0 }}
+            key={unreadCount}
+            initial={{ scale: 0.4, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{
-              type: "spring",
-              damping: 15,
-              stiffness: 300,
-            }}
-            className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-slate-900"
+            exit={{ scale: 0.4, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 420, damping: 24 }}
+            className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full border border-slate-950 bg-cyan-500 px-1 text-[10px] font-semibold leading-none text-slate-950 shadow-lg shadow-cyan-500/30"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </motion.span>
-        )}
+        ) : null}
       </AnimatePresence>
-
-      {/* Pulse animation when there are unread notifications */}
-      {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px]">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-        </span>
-      )}
-    </button>
+    </motion.button>
   );
-};
+}
 
 export default NotificationBell;

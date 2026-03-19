@@ -62,7 +62,7 @@ export const pulseGlow: Variants = {
 
 // Status color transition
 export const statusTransition = {
-  transition: { duration: 0.5, ease: "easeInOut" },
+  transition: { duration: 0.5, ease: "easeInOut" as const },
 };
 
 // Skeleton shimmer

@@ -1,11 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 @layer base {
   /* War Room Dashboard Base Styles */
   * {
-    @apply border-border;
+    border-color: var(--panel-border, rgba(51, 65, 85, 0.5));
   }
 
   :root {

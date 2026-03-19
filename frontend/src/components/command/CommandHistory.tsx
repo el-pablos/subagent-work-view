@@ -1,5 +1,5 @@
 import React from "react";
-import { CommandEntry, CommandStatus } from "./types";
+import type { CommandEntry, CommandStatus } from "./types";
 
 interface CommandHistoryProps {
   entries: CommandEntry[];
