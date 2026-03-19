@@ -243,9 +243,7 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
                   {/* Event circle */}
                   <div
                     className={`relative w-10 h-10 rounded-full ${eventColor.bg} border-2 ${eventColor.border} flex items-center justify-center ${eventColor.text} text-sm font-medium z-10 transition-all duration-300 hover:scale-110 ${
-                      isHighlighted
-                        ? "scale-125 ring-4 ring-cyan-400/50"
-                        : ""
+                      isHighlighted ? "scale-125 ring-4 ring-cyan-400/50" : ""
                     }`}
                   >
                     {getEventIcon(event.type)}

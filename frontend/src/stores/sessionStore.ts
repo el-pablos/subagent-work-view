@@ -84,3 +84,36 @@ export const useSessionStore = create<SessionState & SessionActions>()(
       }),
   })),
 );
+
+// Selectors for optimized re-renders
+export const useSessionsArray = () =>
+  useSessionStore((state) => Object.values(state.sessions));
+
+export const useActiveSessionId = () =>
+  useSessionStore((state) => state.activeSessionId);
+
+export const useActiveSession = () =>
+  useSessionStore((state) => {
+    if (state.activeSessionId === null) return undefined;
+    return state.sessions[state.activeSessionId];
+  });
+
+export const useSessionById = (id: number | null) =>
+  useSessionStore((state) => (id ? state.sessions[id] : undefined));
+
+export const useSessionsByStatus = (status: SessionStatus) =>
+  useSessionStore((state) =>
+    Object.values(state.sessions).filter((session) => session.status === status)
+  );
+
+export const useSessionActions = () =>
+  useSessionStore(
+    useShallow((state) => ({
+      setSessions: state.setSessions,
+      updateSession: state.updateSession,
+      updateSessionPartial: state.updateSessionPartial,
+      addSession: state.addSession,
+      setActiveSession: state.setActiveSession,
+      clearSessions: state.clearSessions,
+    }))
+  );

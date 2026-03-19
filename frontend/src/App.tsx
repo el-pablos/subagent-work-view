@@ -1,5 +1,4 @@
-import { useState, useCallback } from "react";
-import { WarRoomLayout } from "./components/layout";
+import { useState, useCallback, lazy, Suspense } from "react";
 import type { ConnectionStatus } from "./components/layout/Header";
 import type { Agent, AgentConnection } from "./components/agents/types";
 import type { Task, TaskHistoryEvent } from "./types/task";
@@ -7,6 +6,9 @@ import type {
   Message,
   CommandSuggestion,
 } from "./components/communication/types";
+
+// Lazy load WarRoomLayout for code splitting
+const WarRoomLayout = lazy(() => import("./components/layout/WarRoomLayout"));
 
 // Mock data for demonstration
 const mockAgents: Agent[] = [

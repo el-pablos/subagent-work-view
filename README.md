@@ -1,18 +1,19 @@
 <div align="center">
 
-# 🎮 SubAgent Work View
+# 🤖 Live Agents - Claude Code Dashboard
 
-### War Room Dashboard untuk Tim AI Sub-Agent
+### Real-time Visualization Platform untuk Multi-Agent AI Collaboration
 
-[![CI/CD](https://github.com/el-pablos/subagent-work-view/actions/workflows/ci.yml/badge.svg)](https://github.com/el-pablos/subagent-work-view/actions)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-Passing-success?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/el-pablos/live-agents)
 [![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)](package.json)
 
 <p align="center">
-  <strong>Visualisasi real-time gimana tim AI agent lo bekerja bareng ngerjain task.</strong><br>
+  <strong>Visualisasi real-time gimana tim AI Claude Code agents lo bekerja bareng ngerjain task.</strong><br>
   <em>Kayak mission control buat nonton pasukan AI lo beraksi! 🚀</em>
 </p>
 
@@ -20,7 +21,7 @@
 
 ---
 
-[Demo](#demo) • [Instalasi](#-instalasi-cepet) • [Arsitektur](#-arsitektur-sistem) • [API](#-api-endpoints) • [Kontributor](#-kontributor)
+[Demo](#-screenshots) • [Instalasi](#-instalasi-cepet) • [Arsitektur](#-arsitektur-sistem) • [Claude Code](#-integrasi-claude-code) • [API](#-api-endpoints) • [Kontributor](#-kontributor)
 
 </div>
 
@@ -28,19 +29,20 @@
 
 ## 📖 Apa Sih Ini?
 
-**SubAgent Work View** itu dashboard buat ngawasin tim AI sub-agent yang lagi kerja bareng. Bayangin lo punya tim developer AI virtual, terus lo bisa liat live:
+**Live Agents** itu dashboard buat ngawasin tim AI sub-agent yang lagi kerja bareng, khususnya dioptimasi buat **Claude Code multi-agent workflow**. Bayangin lo punya tim developer AI virtual, terus lo bisa liat live:
 
 - 🤖 **Siapa yang lagi ngerjain apa** - Status real-time setiap agent
 - 💬 **Komunikasi antar agent** - Handoff task, diskusi, koordinasi
 - 📊 **Progress task** - Bar progress, timeline, estimasi selesai
-- ⚡ **Command center** - Kirim perintah dari WhatsApp, Telegram, atau langsung dari dashboard
+- ⚡ **Command center** - Kirim perintah dari terminal atau dashboard
+- 🔗 **Claude Code Integration** - Native support buat multi-agent Claude Code session
 
 ### Use Case
 
-1. **Lo kirim command via WhatsApp**: "Buatkan fitur login dengan OAuth Google"
+1. **Lo jalanin Claude Code dengan multi-agent**: "Hey Claude, buatin fitur auth dengan 5 sub-agent"
 2. **Dashboard langsung rame**:
-   - Planner agent mulai analisis requirement
-   - Coder agents mulai nulis kode
+   - Team Lead agent mulai breakdown task
+   - Coder agents mulai nulis kode parallel
    - Reviewer agent standby buat review
    - Tester agent siap jalanin test
 3. **Lo tinggal nonton** progress real-time sambil ngopi ☕
@@ -58,6 +60,7 @@
 | 🖥️ **Command Console** | Terminal-style input dengan autocomplete |
 | 📈 **Timeline View** | Horizontal timeline eksekusi task |
 | 🌙 **Dark Theme** | "War Room" aesthetic yang enak diliat |
+| 🔌 **Claude Code Native** | Built-in support buat Claude Code multi-agent |
 
 ---
 
@@ -67,66 +70,170 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         EXTERNAL CHANNELS                                    │
-│          WhatsApp │ Telegram │ Slack │ Discord │ REST API                   │
-└─────────────────────────────────┬───────────────────────────────────────────┘
-                                  │
-                                  ▼
+│                           CLAUDE CODE ECOSYSTEM                              │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                    CLAUDE CODE CLI / VS CODE                         │    │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐     │    │
+│  │  │ Team Lead  │──│  Coder-1   │──│  Coder-2   │──│  Reviewer  │     │    │
+│  │  │  (Leader)  │  │  (Worker)  │  │  (Worker)  │  │  (Worker)  │     │    │
+│  │  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘     │    │
+│  │        │               │               │               │            │    │
+│  │        └───────────────┴───────┬───────┴───────────────┘            │    │
+│  └────────────────────────────────┼────────────────────────────────────┘    │
+│                                   │                                          │
+│                                   │ Events (MCP / API)                       │
+│                                   ▼                                          │
+└───────────────────────────────────┼──────────────────────────────────────────┘
+                                    │
+                                    ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                                                                             │
-│    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐       │
-│    │   LARAVEL 11    │    │     MYSQL 8     │    │     REDIS 7     │       │
-│    │   Backend API   │◄──►│    Database     │◄──►│   Cache/Queue   │       │
-│    │   PHP 8.3       │    │                 │    │                 │       │
-│    └────────┬────────┘    └─────────────────┘    └─────────────────┘       │
-│             │                                                               │
-│             │ Broadcasting                                                  │
-│             ▼                                                               │
-│    ┌─────────────────┐                                                      │
-│    │     SOKETI      │ ◄─── Pusher-compatible WebSocket Server             │
-│    │   WebSocket     │                                                      │
-│    └────────┬────────┘                                                      │
-│             │                                                               │
-└─────────────┼───────────────────────────────────────────────────────────────┘
+│                           LIVE AGENTS BACKEND                                │
+│                                                                              │
+│    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐        │
+│    │   LARAVEL 11    │    │     MYSQL 8     │    │     REDIS 7     │        │
+│    │   Backend API   │◄──►│    Database     │◄──►│   Cache/Queue   │        │
+│    │   PHP 8.3       │    │                 │    │                 │        │
+│    └────────┬────────┘    └─────────────────┘    └─────────────────┘        │
+│             │                                                                │
+│             │ Broadcasting                                                   │
+│             ▼                                                                │
+│    ┌─────────────────┐                                                       │
+│    │     SOKETI      │ ◄─── Pusher-compatible WebSocket Server              │
+│    │   WebSocket     │                                                       │
+│    └────────┬────────┘                                                       │
+│             │                                                                │
+└─────────────┼────────────────────────────────────────────────────────────────┘
               │
               ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           FRONTEND DASHBOARD                                 │
-│                                                                             │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │                     WAR ROOM LAYOUT                              │     │
-│    │  ┌─────────────────────┐  ┌─────────────────────────────────┐   │     │
-│    │  │  Agent Topology     │  │  Active Tasks + Communication   │   │     │
-│    │  │  (7 columns)        │  │  Log (5 columns)                │   │     │
-│    │  │                     │  │                                 │   │     │
-│    │  │  [🤖] [🤖] [🤖]     │  │  ┌─────────────────────────┐   │   │     │
-│    │  │     \   |   /       │  │  │ Task: Implement OAuth   │   │   │     │
-│    │  │  [🤖]──[🤖]──[🤖]   │  │  │ ████████░░░░ 75%       │   │   │     │
-│    │  │                     │  │  └─────────────────────────┘   │   │     │
-│    │  └─────────────────────┘  │  ┌─────────────────────────┐   │   │     │
-│    │                           │  │ 💬 Planner → Coder:     │   │   │     │
-│    │  ┌─────────────────────┐  │  │ "Requirements ready!"   │   │   │     │
-│    │  │ Timeline + Console  │  │  └─────────────────────────┘   │   │     │
-│    │  └─────────────────────┘  └─────────────────────────────────┘   │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                                                                             │
-│    React 18 + TypeScript + Vite + Zustand + Framer Motion + Tailwind       │
+│                                                                              │
+│    ┌─────────────────────────────────────────────────────────────────┐      │
+│    │                     WAR ROOM LAYOUT                              │      │
+│    │  ┌─────────────────────┐  ┌─────────────────────────────────┐   │      │
+│    │  │  Agent Topology     │  │  Active Tasks + Communication   │   │      │
+│    │  │  (7 columns)        │  │  Log (5 columns)                │   │      │
+│    │  │                     │  │                                 │   │      │
+│    │  │  [🤖] [🤖] [🤖]     │  │  ┌─────────────────────────┐   │   │      │
+│    │  │     \   |   /       │  │  │ Task: Implement OAuth   │   │   │      │
+│    │  │  [🤖]──[🎯]──[🤖]   │  │  │ ████████░░░░ 75%       │   │   │      │
+│    │  │                     │  │  └─────────────────────────┘   │   │      │
+│    │  └─────────────────────┘  │  ┌─────────────────────────┐   │   │      │
+│    │                           │  │ 💬 Leader → Coder-1:    │   │   │      │
+│    │  ┌─────────────────────┐  │  │ "Handle auth module!"   │   │   │      │
+│    │  │ Timeline + Console  │  │  └─────────────────────────┘   │   │      │
+│    │  └─────────────────────┘  └─────────────────────────────────┘   │      │
+│    └─────────────────────────────────────────────────────────────────┘      │
+│                                                                              │
+│    React 19 + TypeScript 5.9 + Vite 8 + Zustand 5 + Framer Motion           │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Tech Stack
 
-| Layer | Teknologi | Kenapa Dipilih |
-|-------|-----------|----------------|
-| **Backend** | Laravel 11 + PHP 8.3 | Queue support, broadcasting, ecosystem lengkap |
-| **Database** | MySQL 8 | Reliable, indexing bagus buat dashboard query |
-| **Cache/Queue** | Redis 7 | Cepet, pub/sub support |
-| **WebSocket** | Soketi | Pusher-compatible, self-hosted, Laravel Echo ready |
-| **Frontend** | React 18 + TypeScript | Component-based, type-safe, great for real-time UI |
-| **State** | Zustand + Immer | Lightweight, perfect buat real-time updates |
-| **Animation** | Framer Motion | Smooth transitions buat status changes |
-| **Styling** | Tailwind CSS | Rapid development, dark theme gampang |
-| **Container** | Docker Compose | Consistent environment, easy deployment |
+| Layer | Teknologi | Version | Kenapa Dipilih |
+|-------|-----------|---------|----------------|
+| **Backend** | Laravel | 11.x | Queue support, broadcasting, ecosystem lengkap |
+| **PHP Runtime** | PHP | 8.2+ | Fitur modern, performa optimal |
+| **Database** | MySQL | 8.0 | Reliable, indexing bagus buat dashboard query |
+| **Cache/Queue** | Redis | 7.x | Cepet, pub/sub support |
+| **WebSocket** | Soketi | 1.6 | Pusher-compatible, self-hosted, Laravel Echo ready |
+| **Frontend** | React | 19.x | Component-based, concurrent features |
+| **Language** | TypeScript | 5.9 | Type-safe, better DX |
+| **Build Tool** | Vite | 8.x | Lightning fast HMR |
+| **State** | Zustand + Immer | 5.x | Lightweight, perfect buat real-time updates |
+| **Animation** | Framer Motion | 12.x | Smooth transitions buat status changes |
+| **Styling** | Tailwind CSS | 4.x | Rapid development, dark theme gampang |
+| **Container** | Docker Compose | 3.8 | Consistent environment, easy deployment |
+
+---
+
+## 🔌 Integrasi Claude Code
+
+### Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        CLAUDE CODE INTEGRATION FLOW                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   COMMAND    │     │  TEAM LEAD   │     │   WORKERS    │     │  DASHBOARD   │
+│   (User)     │     │   (Claude)   │     │  (Sub-Agent) │     │ (Live Agents)│
+└──────┬───────┘     └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+       │                    │                    │                    │
+       │  1. Start Session  │                    │                    │
+       │ ──────────────────>│                    │                    │
+       │                    │                    │                    │
+       │                    │  2. Register       │                    │
+       │                    │     Session        │                    │
+       │                    │ ──────────────────────────────────────> │
+       │                    │                    │                    │
+       │                    │  3. Spawn Workers  │                    │
+       │                    │ ──────────────────>│                    │
+       │                    │                    │                    │
+       │                    │                    │  4. Register Agent │
+       │                    │                    │ ──────────────────>│
+       │                    │                    │                    │
+       │                    │  5. Assign Tasks   │                    │
+       │                    │ ──────────────────>│                    │
+       │                    │                    │                    │
+       │                    │                    │  6. Task Updates   │
+       │                    │                    │ ──────────────────>│
+       │                    │                    │        │           │
+       │                    │                    │        │  7. Real-time
+       │                    │                    │        │     Broadcast
+       │                    │                    │        │     (WebSocket)
+       │                    │                    │        ▼           │
+       │                    │                    │    ┌───────────┐   │
+       │                    │                    │    │ Dashboard │   │
+       │                    │                    │    │  Updates  │   │
+       │                    │                    │    └───────────┘   │
+       │                    │                    │                    │
+       │                    │  8. Task Complete  │                    │
+       │                    │ <──────────────────│                    │
+       │                    │                    │                    │
+       │                    │                    │  9. Final Status   │
+       │                    │                    │ ──────────────────>│
+       │                    │                    │                    │
+       │  10. Result        │                    │                    │
+       │ <──────────────────│                    │                    │
+       │                    │                    │                    │
+       ▼                    ▼                    ▼                    ▼
+```
+
+### Event Types dari Claude Code
+
+```typescript
+// Events yang di-broadcast ke Dashboard
+interface ClaudeCodeEvents {
+  // Session Events
+  'session.created': { sessionId: string; command: string; }
+  'session.completed': { sessionId: string; result: any; }
+
+  // Agent Events
+  'agent.registered': { agentId: string; type: 'leader' | 'worker'; }
+  'agent.status_changed': { agentId: string; status: AgentStatus; }
+  'agent.heartbeat': { agentId: string; timestamp: Date; }
+
+  // Task Events
+  'task.created': { taskId: string; title: string; assignee: string; }
+  'task.progress': { taskId: string; progress: number; }
+  'task.completed': { taskId: string; result: any; }
+
+  // Communication Events
+  'message.sent': { from: string; to: string; content: string; }
+}
+```
+
+### Integration Methods
+
+| Method | Description | Use Case |
+|--------|-------------|----------|
+| **REST API** | HTTP endpoints buat CRUD operations | Initial data load, one-time actions |
+| **WebSocket** | Real-time bidirectional communication | Live updates, status changes |
+| **MCP (Coming Soon)** | Model Context Protocol integration | Native Claude Code hooks |
 
 ---
 
@@ -136,9 +243,9 @@
 ┌─────────────────────┐
 │       users         │
 ├─────────────────────┤
-│ id                  │
+│ id            (PK)  │
 │ name                │
-│ email               │
+│ email          (UK) │
 │ password            │
 │ created_at          │
 └──────────┬──────────┘
@@ -149,32 +256,32 @@
 ┌─────────────────────┐         ┌─────────────────────┐
 │      sessions       │         │       agents        │
 ├─────────────────────┤         ├─────────────────────┤
-│ id                  │         │ id                  │
-│ uuid           (UK) │         │ uuid           (UK) │
+│ id            (PK)  │         │ id            (PK)  │
+│ uuid          (UK)  │         │ uuid          (UK)  │
 │ command_source      │         │ name                │
 │ original_command    │         │ type                │
 │ status              │         │ status              │
-│ context        (JSON│         │ current_task        │
-│ created_by     (FK) │         │ avatar              │
+│ context       (JSON)│         │ current_task        │
+│ created_by    (FK)  │         │ avatar              │
 │ started_at          │         │ capacity            │
 │ ended_at            │         │ priority            │
 │ timestamps          │         │ capabilities  (JSON)│
 └──────────┬──────────┘         │ last_seen_at        │
            │ 1                  │ timestamps          │
-           │                    │ deleted_at     (ST) │
+           │                    │ deleted_at    (ST)  │
            │ has many           └──────────┬──────────┘
            ▼ *                             │ 1
 ┌─────────────────────┐                    │
 │       tasks         │                    │ assigned to
 ├─────────────────────┤                    │
-│ id                  │◄───────────────────┘ *
-│ uuid           (UK) │
-│ session_id     (FK) │         ┌─────────────────────┐
+│ id            (PK)  │◄───────────────────┘ *
+│ uuid          (UK)  │
+│ session_id    (FK)  │         ┌─────────────────────┐
 │ title               │         │     task_logs       │
 │ description         │         ├─────────────────────┤
-│ status              │    *    │ id                  │
-│ assigned_agent_id(FK├────────►│ task_id       (FK)  │
-│ progress       (0-100         │ agent_id      (FK)  │
+│ status              │    *    │ id            (PK)  │
+│ assigned_agent (FK) ├────────►│ task_id       (FK)  │
+│ progress      (0-100)         │ agent_id      (FK)  │
 │ attempt             │         │ action              │
 │ max_attempt         │         │ notes               │
 │ payload       (JSON)│         │ meta          (JSON)│
@@ -192,10 +299,10 @@
 ┌─────────────────────┐
 │      messages       │
 ├─────────────────────┤
-│ id                  │
-│ session_id     (FK) │
-│ from_agent_id  (FK) │
-│ to_agent_id    (FK) │
+│ id            (PK)  │
+│ session_id    (FK)  │
+│ from_agent_id (FK)  │
+│ to_agent_id   (FK)  │
 │ content             │
 │ message_type        │
 │ channel             │
@@ -204,6 +311,7 @@
 └─────────────────────┘
 
 Legend:
+  (PK) = Primary Key
   (UK) = Unique Key
   (FK) = Foreign Key
   (ST) = Soft Delete Timestamp
@@ -225,15 +333,16 @@ MessageType:   agent | system | user | broadcast
 
 ### Prerequisites
 
-- Docker & Docker Compose
+- Docker & Docker Compose (required)
 - Git
+- 4GB RAM minimum (recommended 8GB)
 
 ### Steps
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/el-pablos/subagent-work-view.git
-cd subagent-work-view
+git clone https://github.com/el-pablos/live-agents.git
+cd live-agents
 
 # 2. Copy environment file
 cp .env.example .env
@@ -247,18 +356,36 @@ docker-compose up -d
 # 5. Tunggu MySQL ready, terus jalankan migration
 docker exec subagent-backend php artisan migrate --seed
 
-# 6. Done! Akses di browser
+# 6. Generate app key
+docker exec subagent-backend php artisan key:generate
+
+# 7. Done! Akses di browser
 ```
 
 ### Access Points
 
-| Service | URL |
-|---------|-----|
-| 🖥️ Frontend Dashboard | http://localhost:5173 |
-| 🔌 API Endpoint | http://localhost/api/v1 |
-| 📡 WebSocket | ws://localhost:6001 |
-| 🐬 MySQL | localhost:3306 |
-| 🔴 Redis | localhost:6379 |
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🖥️ Frontend Dashboard | http://localhost:5173 | Main dashboard UI |
+| 🔌 API Endpoint | http://localhost/api/v1 | REST API |
+| 📡 WebSocket | ws://localhost:6001 | Soketi WebSocket |
+| 🐬 MySQL | localhost:3306 | Database |
+| 🔴 Redis | localhost:6379 | Cache & Queue |
+| 📊 Soketi Metrics | http://localhost:9601 | WebSocket metrics |
+
+### Docker Services
+
+```yaml
+services:
+  - nginx          # Reverse proxy
+  - backend        # Laravel PHP-FPM
+  - queue-worker   # Background job processor
+  - scheduler      # Laravel scheduler
+  - soketi         # WebSocket server
+  - frontend       # React dev server
+  - mysql          # Database
+  - redis          # Cache/Queue
+```
 
 ---
 
@@ -325,8 +452,8 @@ window.Pusher = Pusher;
 
 const echo = new Echo({
   broadcaster: 'pusher',
-  key: 'your-app-key',
-  wsHost: 'localhost',
+  key: import.meta.env.VITE_PUSHER_APP_KEY,
+  wsHost: import.meta.env.VITE_PUSHER_HOST,
   wsPort: 6001,
   forceTLS: false,
   disableStats: true,
@@ -354,11 +481,19 @@ echo.channel(`session.${sessionId}`)
   });
 ```
 
+### Available Channels
+
+| Channel | Events | Description |
+|---------|--------|-------------|
+| `dashboard.global` | agent.*, session.*, task.* | Global dashboard updates |
+| `session.{id}` | task.*, message.* | Session-specific updates |
+| `agent.{id}` | status.*, heartbeat.* | Individual agent updates |
+
 ---
 
 ## 🤖 Default Agents
 
-System udah include 6 agents siap pakai:
+System include 6 agent templates siap pakai:
 
 | Agent | Type | Priority | Kemampuan |
 |-------|------|----------|-----------|
@@ -374,7 +509,7 @@ System udah include 6 agents siap pakai:
 ## 📁 Struktur Project
 
 ```
-subagent-work-view/
+live-agents/
 ├── 📂 backend/                    # Laravel 11 Backend
 │   ├── app/
 │   │   ├── Enums/                 # Status enums (AgentStatus, TaskStatus, dll)
@@ -390,7 +525,7 @@ subagent-work-view/
 │   │   └── seeders/               # Default data
 │   └── routes/api.php             # API routes
 │
-├── 📂 frontend/                   # React Frontend
+├── 📂 frontend/                   # React 19 Frontend
 │   └── src/
 │       ├── components/
 │       │   ├── agents/            # AgentNode, AgentTopologyPanel, TypingIndicator
@@ -411,8 +546,33 @@ subagent-work-view/
 │
 ├── 📄 docker-compose.yml          # 8 services orchestration
 ├── 📄 .env.example                # Environment template
-└── 📄 .github/workflows/ci.yml    # CI/CD pipeline
+└── 📄 README.md                   # You are here! 👋
 ```
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### War Room Dashboard
+
+![Dashboard Screenshot](docs/screenshots/dashboard.png)
+*Main dashboard dengan agent topology dan real-time task updates*
+
+### Agent Communication
+
+![Communication Screenshot](docs/screenshots/communication.png)
+*Real-time chat antar agents dengan status indicators*
+
+### Task Timeline
+
+![Timeline Screenshot](docs/screenshots/timeline.png)
+*Horizontal timeline view untuk tracking task execution*
+
+</div>
+
+> 💡 **Note**: Screenshots akan di-update setelah deployment pertama
 
 ---
 
@@ -422,15 +582,54 @@ subagent-work-view/
 
 | Metric | Value |
 |--------|-------|
-| 📁 Total Files | **194 files** |
-| 📝 Lines of Code | **26,000+ lines** |
+| 📁 Total Files | **200+ files** |
+| 📝 Lines of Code | **30,000+ lines** |
 | 🤖 Build Agents Used | **35 parallel agents** |
-| ⏱️ Build Time | **~10 minutes** |
+| ⏱️ Initial Build Time | **~15 minutes** |
 | 🐳 Docker Services | **8 containers** |
 | 🔌 API Endpoints | **25+ endpoints** |
-| 🎨 React Components | **20+ components** |
+| 🎨 React Components | **25+ components** |
+| 📡 WebSocket Channels | **3 channel types** |
 
 </div>
+
+---
+
+## 🛠️ Development
+
+### Local Development (tanpa Docker)
+
+```bash
+# Backend
+cd backend
+composer install
+php artisan serve
+
+# Frontend (terminal baru)
+cd frontend
+npm install
+npm run dev
+```
+
+### Running Tests
+
+```bash
+# Backend tests
+docker exec subagent-backend php artisan test
+
+# Frontend tests
+docker exec subagent-frontend npm run test
+```
+
+### Code Style
+
+```bash
+# PHP (Laravel Pint)
+docker exec subagent-backend ./vendor/bin/pint
+
+# TypeScript (ESLint)
+docker exec subagent-frontend npm run lint
+```
 
 ---
 
@@ -446,17 +645,27 @@ subagent-work-view/
   <strong>@el-pablos</strong>
 </a>
 
-### AI Assistant
+<br><br>
+
+### AI Development Partner
 
 <a href="https://claude.ai">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png" width="80" height="80" alt="Claude AI">
+  <img src="https://www.anthropic.com/images/icons/apple-touch-icon.png" width="80" height="80" alt="Claude AI">
   <br>
   <strong>Claude Code (Anthropic)</strong>
 </a>
 
 <br><br>
 
-*Built with ❤️ using 30+ parallel AI sub-agents*
+*Built with ❤️ menggunakan 35 parallel AI sub-agents*
+
+<br>
+
+### Powered By
+
+[![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Code-7C3AED?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.ai)
+[![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 
 </div>
 
@@ -474,8 +683,14 @@ MIT License - bebas dipake, dimodif, didistribusi. Cuma jangan lupa kasih credit
 
 <br>
 
-[![GitHub stars](https://img.shields.io/github/stars/el-pablos/subagent-work-view?style=social)](https://github.com/el-pablos/subagent-work-view/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/el-pablos/subagent-work-view?style=social)](https://github.com/el-pablos/subagent-work-view/network/members)
-[![GitHub watchers](https://img.shields.io/github/watchers/el-pablos/subagent-work-view?style=social)](https://github.com/el-pablos/subagent-work-view/watchers)
+[![GitHub stars](https://img.shields.io/github/stars/el-pablos/live-agents?style=social)](https://github.com/el-pablos/live-agents/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/el-pablos/live-agents?style=social)](https://github.com/el-pablos/live-agents/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/el-pablos/live-agents?style=social)](https://github.com/el-pablos/live-agents/watchers)
+
+<br>
+
+---
+
+<sub>Made with 🤖 Claude Code + ☕ by el-pablos</sub>
 
 </div>
