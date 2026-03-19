@@ -147,6 +147,49 @@ class Task extends Model
         return $this->hasMany(TaskLog::class);
     }
 
+    /**
+     * Get all tasks that this task is blocked by (dependencies).
+     * Returns tasks whose IDs are in this task's dependencies array.
+     */
+    public function blockedBy(): HasMany
+    {
+        return $this->hasMany(Task::class, 'id')
+            ->whereIn('id', $this->dependencies ?? []);
+    }
+
+    /**
+     * Get all tasks that are blocked by this task.
+     * Returns tasks that have this task's ID in their dependencies array.
+     */
+    public function blocks(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Task::whereJsonContains('dependencies', $this->id);
+    }
+
+    /**
+     * Check if this task is blocked (has incomplete dependencies).
+     */
+    public function isBlocked(): bool
+    {
+        if (!$this->hasDependencies()) {
+            return false;
+        }
+
+        $incompleteDeps = Task::whereIn('id', $this->dependencies)
+            ->where('status', '!=', TaskStatus::COMPLETED)
+            ->exists();
+
+        return $incompleteDeps;
+    }
+
+    /**
+     * Check if this task is ready (no dependencies or all completed).
+     */
+    public function isReady(): bool
+    {
+        return !$this->isBlocked();
+    }
+
     public function canRetry(): bool
     {
         return $this->attempt < $this->max_attempt;
