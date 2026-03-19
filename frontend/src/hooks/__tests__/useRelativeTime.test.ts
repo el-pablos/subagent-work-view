@@ -4,56 +4,52 @@ import { describe, expect, it, vi } from 'vitest';
 import { useRelativeTime } from '../useRelativeTime';
 
 describe('useRelativeTime', () => {
-  it('returns fallback placeholders for null timestamps', () => {
-    const { result } = renderHook(() => useRelativeTime(null));
+  it('returns a fallback placeholder for invalid timestamps', () => {
+    const { result } = renderHook(() => useRelativeTime('bukan-tanggal-valid'));
 
-    expect(result.current).toEqual({
-      relativeTime: '—',
-      absoluteTime: '—',
-    });
+    expect(result.current).toBe('—');
   });
 
-  it('formats relative and absolute time for a valid timestamp', () => {
+  it('formats a valid timestamp into the current compact relative label', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-10T12:00:00Z'));
 
-    const { result } = renderHook(() =>
-      useRelativeTime('2026-01-10T11:58:00Z', { updateInterval: 1000 }),
-    );
+    const { result } = renderHook(() => useRelativeTime('2026-01-10T11:58:00Z'));
 
-    expect(result.current.relativeTime).toBe('2 menit yang lalu');
-    expect(result.current.absoluteTime).toContain('10 Jan 2026');
+    expect(result.current).toBe('2m lalu');
   });
 
   it('updates the relative time when the interval elapses', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-10T12:00:00Z'));
 
-    const { result } = renderHook(() =>
-      useRelativeTime('2026-01-10T11:59:56Z', { updateInterval: 1000 }),
-    );
+    const { result } = renderHook(() => useRelativeTime('2026-01-10T11:59:56Z'));
 
-    expect(result.current.relativeTime).toBe('baru saja');
+    expect(result.current).toBe('baru saja');
 
     act(() => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(result.current.relativeTime).toBe('5 detik yang lalu');
+    expect(result.current).toBe('5d lalu');
   });
 
-  it('does not start interval updates when disabled', () => {
+  it('respects a custom refresh interval before recomputing the label', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-10T12:00:00Z'));
 
-    const { result } = renderHook(() =>
-      useRelativeTime('2026-01-10T11:59:00Z', { updateInterval: 1000, enabled: false }),
-    );
+    const { result } = renderHook(() => useRelativeTime('2026-01-10T11:59:56Z', 5000));
 
     act(() => {
-      vi.advanceTimersByTime(10_000);
+      vi.advanceTimersByTime(1000);
     });
 
-    expect(result.current.relativeTime).toBe('1 menit yang lalu');
+    expect(result.current).toBe('baru saja');
+
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(result.current).toBe('9d lalu');
   });
 });

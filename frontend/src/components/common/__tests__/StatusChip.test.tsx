@@ -6,9 +6,9 @@ describe('StatusChip', () => {
   it('renders the default label for a completed status', () => {
     render(<StatusChip status="completed" />);
 
-    const chip = screen.getByText('Completed');
-    expect(chip).toBeInTheDocument();
-    expect(chip.closest('span')).toHaveClass('bg-emerald-500/12');
+    const label = screen.getByText('Completed');
+    expect(label).toBeInTheDocument();
+    expect(label.parentElement).toHaveClass('bg-emerald-500/12');
   });
 
   it('renders a pulsing indicator for active running status', () => {
@@ -23,7 +23,7 @@ describe('StatusChip', () => {
       <StatusChip status="error" label="Gagal Diproses" icon={false} size="lg" />,
     );
 
-    const chip = screen.getByText('Gagal Diproses').closest('span');
+    const chip = screen.getByText('Gagal Diproses').parentElement;
     expect(chip).toHaveClass('text-sm', 'px-3.5');
     expect(container.querySelector('.bg-rose-400')).not.toBeInTheDocument();
   });

@@ -6,7 +6,7 @@ describe('GlassPanel', () => {
   it('renders children with default panel styles', () => {
     render(<GlassPanel>Panel content</GlassPanel>);
 
-    const panel = screen.getByText('Panel content').parentElement;
+    const panel = screen.getByText('Panel content');
     expect(panel).toHaveClass('rounded-xl', 'bg-slate-900/60', 'p-4');
   });
 
@@ -17,7 +17,7 @@ describe('GlassPanel', () => {
       </GlassPanel>,
     );
 
-    const panel = screen.getByText('Glowing panel').parentElement;
+    const panel = screen.getByText('Glowing panel');
     expect(panel).toHaveClass('bg-slate-900/80', 'ring-1', 'p-6');
   });
 

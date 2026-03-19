@@ -6,95 +6,111 @@ describe('useNotificationStore', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     useNotificationStore.setState({
-      toasts: [],
-      notifications: {},
+      notifications: [],
+      unreadCount: 0,
       isDrawerOpen: false,
-      maxVisibleToasts: 5,
     });
   });
 
-  it('adds a toast and removes it automatically after its duration', () => {
+  it('adds notifications to the front of the list and applies default metadata', () => {
     const store = useNotificationStore.getState();
 
-    let toastId = '';
     act(() => {
-      toastId = store.addToast({ type: 'success', message: 'Tersimpan', duration: 500 });
+      store.addNotification({
+        type: 'success',
+        title: 'Tersimpan',
+        message: 'Perubahan berhasil disimpan',
+      });
+      vi.advanceTimersByTime(10);
+      store.addNotification({
+        type: 'warning',
+        title: 'Perlu perhatian',
+        message: 'Ada perubahan lanjutan',
+        duration: 1200,
+      });
     });
 
-    expect(useNotificationStore.getState().toasts[0]).toMatchObject({
-      id: toastId,
-      message: 'Tersimpan',
+    const { notifications, unreadCount } = useNotificationStore.getState();
+
+    expect(notifications).toHaveLength(2);
+    expect(notifications[0]).toMatchObject({
+      title: 'Perlu perhatian',
+      message: 'Ada perubahan lanjutan',
+      type: 'warning',
+      duration: 1200,
+      read: false,
+    });
+    expect(notifications[1]).toMatchObject({
+      title: 'Tersimpan',
       type: 'success',
+      duration: 5000,
+      read: false,
     });
-
-    act(() => {
-      vi.advanceTimersByTime(500);
-    });
-
-    expect(useNotificationStore.getState().toasts).toHaveLength(0);
+    expect(notifications[0].id).toMatch(/^notif-/);
+    expect(unreadCount).toBe(2);
   });
 
-  it('manages notification read states and recent ordering', () => {
+  it('marks notifications as read, removes them, and keeps unread totals in sync', () => {
     const store = useNotificationStore.getState();
 
-    let firstId = '';
-    let secondId = '';
-
     act(() => {
-      firstId = store.addNotification({
+      store.addNotification({
         type: 'info',
         title: 'Info lama',
         message: 'Pesan pertama',
       });
-    });
-
-    act(() => {
       vi.advanceTimersByTime(10);
-      secondId = store.addNotification({
+      store.addNotification({
         type: 'warning',
         title: 'Info baru',
         message: 'Pesan kedua',
       });
     });
 
-    expect(useNotificationStore.getState().getUnreadCount()).toBe(2);
+    const [latest, earliest] = useNotificationStore.getState().notifications;
+
+    expect(latest.title).toBe('Info baru');
+    expect(earliest.title).toBe('Info lama');
+    expect(useNotificationStore.getState().unreadCount).toBe(2);
 
     act(() => {
-      store.markAsRead(firstId);
+      store.markAsRead(earliest.id);
     });
 
-    expect(useNotificationStore.getState().notifications[firstId].read).toBe(true);
-    expect(useNotificationStore.getState().getUnreadCount()).toBe(1);
-    expect(useNotificationStore.getState().getRecentNotifications(1)[0].id).toBe(secondId);
+    expect(
+      useNotificationStore.getState().notifications.find((item) => item.id === earliest.id)?.read,
+    ).toBe(true);
+    expect(useNotificationStore.getState().unreadCount).toBe(1);
 
     act(() => {
       store.markAllAsRead();
+      store.removeNotification(latest.id);
     });
 
-    expect(useNotificationStore.getState().getUnreadCount()).toBe(0);
+    expect(useNotificationStore.getState().unreadCount).toBe(0);
+    expect(useNotificationStore.getState().notifications).toHaveLength(1);
+    expect(useNotificationStore.getState().notifications[0].id).toBe(earliest.id);
   });
 
-  it('opens, toggles, and clears drawer state and collections', () => {
+  it('opens, toggles, and clears the drawer and notification collection', () => {
     const store = useNotificationStore.getState();
 
     act(() => {
       store.openDrawer();
-      store.addToast({ type: 'error', message: 'Toast' });
       store.addNotification({ type: 'error', title: 'Notif', message: 'Alert' });
     });
 
     expect(useNotificationStore.getState().isDrawerOpen).toBe(true);
-    expect(useNotificationStore.getState().getVisibleToasts()).toHaveLength(1);
+    expect(useNotificationStore.getState().notifications).toHaveLength(1);
 
     act(() => {
       store.toggleDrawer();
-      store.clearAllToasts();
-      store.clearAllNotifications();
+      store.clearAll();
       store.closeDrawer();
     });
 
     expect(useNotificationStore.getState().isDrawerOpen).toBe(false);
-    expect(useNotificationStore.getState().toasts).toHaveLength(0);
-    expect(Object.keys(useNotificationStore.getState().notifications)).toHaveLength(0);
+    expect(useNotificationStore.getState().notifications).toHaveLength(0);
+    expect(useNotificationStore.getState().unreadCount).toBe(0);
   });
 });

@@ -33,7 +33,7 @@ describe('Skeleton', () => {
       </div>,
     );
 
-    expect(screen.getByRole('status', { name: 'Loading agent node' })).toBeInTheDocument();
+    expect(screen.getAllByRole('status', { name: 'Loading agent node' })).toHaveLength(6);
     expect(screen.getByRole('status', { name: 'Loading task card' })).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading message' })).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading topology' })).toBeInTheDocument();
