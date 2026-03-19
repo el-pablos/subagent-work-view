@@ -2,17 +2,48 @@
 node_modules/
 vendor/
 
-# Environment
+# Environment - WAJIB DIABAIKAN
 .env
+.env.local
+.env.*.local
+*.env
+
+# Secrets & Tokens - JANGAN PERNAH COMMIT
+*.pem
+*.key
+*.secret
+credentials.json
+secrets.json
+*_secret*
+*_token*
+.secrets/
+.credentials/
 
 # Storage
 storage/mysql/*
 storage/redis/*
+storage/logs/*
 *.log
+
+# Build artifacts
+dist/
+build/
+*.cache
 
 # OS
 .DS_Store
+Thumbs.db
 
 # IDEs
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# Laravel specific
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Debug
+*.debug
+.phpunit.result.cache
