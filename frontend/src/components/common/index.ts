@@ -1,6 +1,10 @@
 export { default as StatusChip } from "./StatusChip";
 export { default as ProgressRing } from "./ProgressRing";
 export { default as AlertToast, AlertToastManager } from "./AlertToast";
+export { Badge } from "./Badge";
+export { GlassPanel } from "./GlassPanel";
+export { GlowBorder } from "./GlowBorder";
+export { StatCard } from "./StatCard";
 export {
   Skeleton,
   AgentNodeSkeleton,
@@ -10,6 +14,8 @@ export {
 } from "./Skeleton";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
+export { ErrorBoundary } from "./ErrorBoundary";
+export { AppProviders } from "./AppProviders";
 export { ConnectionStatus } from "./ConnectionStatus";
 export { RelativeTime } from "./RelativeTime";
 export { HeartbeatIndicator } from "./HeartbeatIndicator";
