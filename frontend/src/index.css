@@ -175,6 +175,27 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dark .glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.7) 0%,
+    rgba(15, 23, 42, 0.8) 100%
+  );
+}
+
+:root .glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(241, 245, 249, 0.8) 0%,
+    rgba(248, 250, 252, 0.9) 100%
+  );
+  border: 1px solid rgba(203, 213, 225, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .glass-card::before {
