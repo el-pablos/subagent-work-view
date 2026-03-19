@@ -17,6 +17,7 @@ class WebhookNormalizer
         return match ($source) {
             'claude' => $this->normalizeClaude($payload),
             'openclaw' => $this->normalizeOpenClaw($payload),
+            'copilot-cli' => $this->normalizeCopilotCli($payload),
             default => $this->normalizeGeneric($payload, $source),
         };
     }
@@ -135,6 +136,71 @@ class WebhookNormalizer
                 ]
                 : null,
             'task' => null,
+            'raw' => $payload,
+        ];
+    }
+
+    private function normalizeCopilotCli(array $payload): array
+    {
+        $data = $payload['data'] ?? [];
+        $eventType = $payload['event_type'];
+        $externalSessionId = $payload['session_id'] ?? null;
+        $externalAgentId = $payload['agent_id'] ?? $externalSessionId;
+        $agentName = Arr::get($data, 'name', 'Copilot CLI Agent');
+        $agentType = Arr::get($data, 'agent_type');
+        $taskData = Arr::get($data, 'task');
+        $messageContent = Arr::get($data, 'message_content');
+
+        return [
+            'source' => 'copilot-cli',
+            'event_type' => $eventType,
+            'occurred_at' => $payload['timestamp'] ?? null,
+            'agent' => [
+                'external_id' => $externalAgentId,
+                'name' => $agentName,
+                'type' => $this->normalizeAgentType($agentType, $agentName),
+                'status' => $this->normalizeAgentStatus(Arr::get($data, 'status'))
+                    ?? ($eventType === 'agent_spawn' ? AgentStatus::BUSY->value : AgentStatus::IDLE->value),
+                'current_task' => $taskData['title'] ?? Arr::get($data, 'description'),
+                'capabilities' => array_values(array_filter([
+                    'copilot-cli',
+                    $agentType,
+                ])),
+                'metadata' => [
+                    'agent_type' => $agentType,
+                    'model' => Arr::get($data, 'model'),
+                ],
+            ],
+            'session' => [
+                'external_id' => $externalSessionId,
+                'command_source' => 'copilot-cli',
+                'status' => $this->normalizeSessionStatus(Arr::get($data, 'status'), $eventType),
+                'original_command' => $taskData['title'] ?? Arr::get($data, 'description', 'Copilot CLI webhook event'),
+                'context' => [
+                    'source' => 'copilot-cli',
+                    'event_type' => $eventType,
+                    'payload_data' => $data,
+                ],
+            ],
+            'message' => $eventType === 'message' && $messageContent
+                ? [
+                    'content' => $messageContent,
+                    'message_type' => MessageType::AGENT->value,
+                    'channel' => 'copilot-cli',
+                ]
+                : null,
+            'task' => $eventType === 'task_update' && $taskData
+                ? [
+                    'title' => $taskData['title'] ?? 'Copilot CLI Task',
+                    'description' => $taskData['description'] ?? null,
+                    'status' => $this->normalizeTaskStatus($taskData['status'] ?? null),
+                    'progress' => $taskData['progress'] ?? null,
+                    'action' => 'task_update',
+                    'notes' => $taskData['description'] ?? null,
+                    'payload' => $taskData,
+                    'result' => $taskData['result'] ?? null,
+                ]
+                : null,
             'raw' => $payload,
         ];
     }

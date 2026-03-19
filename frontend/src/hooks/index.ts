@@ -5,3 +5,4 @@ export * from "./useScrollShadow";
 export * from "./useDebounce";
 export * from "./useIntersectionObserver";
 export * from "./useMediaQuery";
+export * from "./useNotificationBridge";

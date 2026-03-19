@@ -7,6 +7,7 @@ import type { Message as UIMessage } from "./components/communication/types";
 import { useAgentStore, useTaskStore, useSessionStore, useMessageStore } from "./stores";
 import { useNotificationStore } from "./stores/notificationStore";
 import { useWebSocketWithStore } from "./hooks/useWebSocket";
+import { useNotificationBridge } from "./hooks/useNotificationBridge";
 import {
   fetchAgents,
   fetchTasks,
@@ -72,6 +73,9 @@ function App() {
       clearInterval(interval);
     };
   }, [setAgents, setTasks, setSessions, setActiveSession]);
+
+  // Bridge store changes → notification toasts
+  useNotificationBridge();
 
   // Wire WebSocket → stores (realtime updates)
   const connectionState = useWebSocketWithStore({

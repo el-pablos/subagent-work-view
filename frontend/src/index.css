@@ -87,6 +87,23 @@
   }
 }
 
+/* Fluid typography utilities */
+@utility text-fluid-xs {
+  font-size: clamp(0.625rem, 0.6rem + 0.15vw, 0.75rem);
+}
+@utility text-fluid-sm {
+  font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+}
+@utility text-fluid-base {
+  font-size: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+}
+@utility text-fluid-lg {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+}
+@utility text-fluid-xl {
+  font-size: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+}
+
 @layer utilities {
   .glass-panel {
     background: var(--glass-bg);
@@ -99,6 +116,13 @@
   .glass-panel-solid {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
+  }
+
+  /* Glass bubble — consistent glass backdrop for message containers */
+  .glass-bubble {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
   .glow-border {

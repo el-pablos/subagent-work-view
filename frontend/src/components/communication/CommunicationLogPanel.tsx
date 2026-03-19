@@ -83,7 +83,7 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
       aria-labelledby="communication-title"
       className={`glass-panel noise-overlay relative flex h-full min-h-0 flex-col overflow-hidden rounded-xl ${className}`}
     >
-      <div className="border-b border-slate-700/50 bg-slate-900/80 px-3 py-3 backdrop-blur-xl sm:px-4 sm:py-3.5">
+      <div className="glass-panel-solid border-b border-slate-700/50 px-3 py-3 sm:px-4 sm:py-3.5">
         <div
           className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${showFilter ? "mb-3" : ""}`}
         >

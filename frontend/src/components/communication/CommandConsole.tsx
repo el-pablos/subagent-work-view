@@ -173,73 +173,33 @@ const CommandConsole: React.FC<CommandConsoleProps> = ({
   }, []);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        borderTop: "1px solid #e2e8f0",
-        backgroundColor: "#ffffff",
-      }}
-    >
+    <div className="glass-panel-solid relative">
       {/* Suggestions dropdown */}
       {showSuggestions && (
         <div
           ref={suggestionsRef}
-          style={{
-            position: "absolute",
-            bottom: "100%",
-            left: 0,
-            right: 0,
-            backgroundColor: "#ffffff",
-            border: "1px solid #e2e8f0",
-            borderBottom: "none",
-            borderRadius: "6px 6px 0 0",
-            maxHeight: "200px",
-            overflowY: "auto",
-            boxShadow: "0 -4px 6px -1px rgba(0, 0, 0, 0.1)",
-          }}
+          className="absolute bottom-full left-0 right-0 max-h-[200px] overflow-y-auto rounded-t-md border border-b-0 border-slate-700/50 bg-slate-900/95 shadow-[0_-4px_12px_rgba(0,0,0,0.3)] backdrop-blur-xl"
         >
           {filteredSuggestions.map((suggestion, index) => (
             <div
               key={suggestion.command}
               onClick={() => handleSuggestionClick(suggestion)}
-              style={{
-                padding: "10px 12px",
-                cursor: "pointer",
-                backgroundColor:
-                  index === selectedSuggestionIndex ? "#f1f5f9" : "transparent",
-                borderBottom: "1px solid #f1f5f9",
-              }}
+              className={`cursor-pointer border-b border-slate-800/50 px-3 py-2.5 ${
+                index === selectedSuggestionIndex
+                  ? "bg-slate-800/60"
+                  : "hover:bg-slate-800/30"
+              }`}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <code
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: "13px",
-                    color: "#3b82f6",
-                    fontWeight: 500,
-                  }}
-                >
+              <div className="flex items-center justify-between">
+                <code className="font-mono text-[13px] font-medium text-cyan-400">
                   {suggestion.command}
                 </code>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>
+                <span className="text-xs text-slate-400">
                   {suggestion.description}
                 </span>
               </div>
               {suggestion.usage && (
-                <div
-                  style={{
-                    fontSize: "11px",
-                    color: "#94a3b8",
-                    marginTop: "4px",
-                    fontFamily: "monospace",
-                  }}
-                >
+                <div className="mt-1 font-mono text-[11px] text-slate-500">
                   Usage: {suggestion.usage}
                 </div>
               )}
@@ -249,7 +209,7 @@ const CommandConsole: React.FC<CommandConsoleProps> = ({
       )}
 
       {/* Input form */}
-      <form onSubmit={handleSubmit} style={{ display: "flex" }}>
+      <form onSubmit={handleSubmit} className="flex">
         <input
           ref={inputRef}
           type="text"
@@ -267,30 +227,18 @@ const CommandConsole: React.FC<CommandConsoleProps> = ({
           }}
           disabled={disabled}
           placeholder={placeholder}
-          style={{
-            flex: 1,
-            padding: "12px 16px",
-            border: "none",
-            fontSize: "14px",
-            fontFamily: "monospace",
-            outline: "none",
-            backgroundColor: disabled ? "#f8fafc" : "#ffffff",
-            color: disabled ? "#94a3b8" : "#1e293b",
-          }}
+          className={`flex-1 border-none bg-transparent px-4 py-3 font-mono text-sm outline-none placeholder:text-slate-500 ${
+            disabled ? "text-slate-500" : "text-slate-100"
+          }`}
         />
         <button
           type="submit"
           disabled={disabled || !input.trim()}
-          style={{
-            padding: "12px 20px",
-            border: "none",
-            backgroundColor: disabled || !input.trim() ? "#e2e8f0" : "#3b82f6",
-            color: disabled || !input.trim() ? "#94a3b8" : "#ffffff",
-            fontWeight: 500,
-            fontSize: "14px",
-            cursor: disabled || !input.trim() ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s ease",
-          }}
+          className={`border-none px-5 py-3 text-sm font-medium transition-colors ${
+            disabled || !input.trim()
+              ? "cursor-not-allowed bg-slate-800/50 text-slate-500"
+              : "cursor-pointer bg-cyan-600 text-white hover:bg-cyan-500"
+          }`}
         >
           Send
         </button>
@@ -298,15 +246,7 @@ const CommandConsole: React.FC<CommandConsoleProps> = ({
 
       {/* Command history hint */}
       {history.length > 0 && (
-        <div
-          style={{
-            padding: "4px 12px",
-            fontSize: "11px",
-            color: "#94a3b8",
-            backgroundColor: "#f8fafc",
-            borderTop: "1px solid #f1f5f9",
-          }}
-        >
+        <div className="border-t border-slate-800/50 bg-slate-900/50 px-3 py-1 text-[11px] text-slate-500">
           Press ↑/↓ to navigate command history ({history.length} commands)
         </div>
       )}

@@ -135,7 +135,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   if (type === "system") {
     return (
       <div
-        className={`${className} mb-1 flex justify-center rounded-lg border px-3 py-2 backdrop-blur-sm ${colors.bg} ${colors.border}`}
+        className={`${className} mb-1 flex justify-center rounded-lg border px-3 py-2 glass-bubble ${colors.bg} ${colors.border}`}
       >
         <div className="flex w-full items-center justify-center gap-2 text-center">
           {/* System icon */}
@@ -166,7 +166,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={`${className} mb-2 flex rounded-xl border px-3.5 py-3 text-sm backdrop-blur-sm sm:px-3 sm:py-2.5 ${colors.bg} ${colors.border}`}
+      className={`${className} mb-2 flex rounded-xl border px-3.5 py-3 text-sm glass-bubble sm:px-3 sm:py-2.5 ${colors.bg} ${colors.border}`}
     >
       {/* Avatar */}
       <div
@@ -239,7 +239,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Broadcast indicator */}
           {type === "broadcast" && (
-            <span className="flex items-center gap-1 rounded-md border border-amber-400/20 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-100 backdrop-blur-sm">
+            <span className="flex items-center gap-1 rounded-md border border-amber-400/20 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-100">
               <svg
                 width="12"
                 height="12"
@@ -256,7 +256,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Channel badge */}
           <span
-            className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium backdrop-blur-sm ${colors.channelBg} ${colors.channelText}`}
+            className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium ${colors.channelBg} ${colors.channelText}`}
           >
             #{channel}
           </span>

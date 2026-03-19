@@ -50,7 +50,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Webhooks for external agent sources
-    Route::prefix('webhook')->group(function () {
+    Route::prefix('webhook')->middleware('throttle:webhook')->group(function () {
         Route::post('{source}', [WebhookController::class, 'receive']);
     });
 

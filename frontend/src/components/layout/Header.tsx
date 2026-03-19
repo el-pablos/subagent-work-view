@@ -1,6 +1,12 @@
 import React from "react";
 import { Activity, Cpu, Menu, RefreshCcw } from "lucide-react";
-import { NotificationBell } from "../common";
+import {
+  ConnectionStatus as ConnectionStatusIndicator,
+  HeartbeatIndicator,
+  NotificationBell,
+  SourceBadge,
+} from "../common";
+import type { SourceType } from "../common";
 
 export type ConnectionStatus = "connected" | "connecting" | "disconnected";
 
@@ -9,46 +15,20 @@ export interface HeaderProps {
   connectionStatus: ConnectionStatus;
   activeAgentCount: number;
   runningTaskCount: number;
+  primarySource?: SourceType;
   onSessionChange?: (sessionId: string) => void;
 }
-
-const getConnectionStatusConfig = (status: ConnectionStatus) => {
-  switch (status) {
-    case "connected":
-      return {
-        color: "bg-emerald-500",
-        pulseColor: "bg-emerald-400",
-        text: "Connected",
-        textColor: "text-emerald-400",
-      };
-    case "connecting":
-      return {
-        color: "bg-amber-500",
-        pulseColor: "bg-amber-400",
-        text: "Connecting...",
-        textColor: "text-amber-400",
-      };
-    case "disconnected":
-      return {
-        color: "bg-red-500",
-        pulseColor: "bg-red-400",
-        text: "Disconnected",
-        textColor: "text-red-400",
-      };
-  }
-};
 
 const Header: React.FC<HeaderProps> = ({
   sessionId,
   connectionStatus,
   activeAgentCount,
   runningTaskCount,
+  primarySource,
   onSessionChange,
 }) => {
-  const statusConfig = getConnectionStatusConfig(connectionStatus);
-
   return (
-    <header className="border-b border-slate-800 bg-slate-900 px-3 py-2 sm:px-4 sm:py-3">
+    <header aria-label="Dashboard header" className="border-b border-slate-800 bg-slate-900 px-3 py-2 sm:px-4 sm:py-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/70 text-slate-300 lg:hidden">
@@ -151,18 +131,15 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-3 py-2">
-              <span className="relative flex h-2.5 w-2.5 items-center justify-center">
-                <span className={`h-2.5 w-2.5 rounded-full ${statusConfig.color}`} />
-                {connectionStatus === "connected" ? (
-                  <span
-                    className={`absolute inset-0 rounded-full ${statusConfig.pulseColor} animate-ping opacity-75`}
-                  />
-                ) : null}
-              </span>
-              <span className={`text-[11px] font-medium ${statusConfig.textColor}`}>
-                {statusConfig.text}
-              </span>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-800/50 px-2 py-1.5">
+              <ConnectionStatusIndicator status={connectionStatus} />
+              <HeartbeatIndicator
+                isAlive={connectionStatus === "connected"}
+                size="sm"
+              />
+              {primarySource ? (
+                <SourceBadge source={primarySource} size="sm" />
+              ) : null}
             </div>
           </div>
         </div>
