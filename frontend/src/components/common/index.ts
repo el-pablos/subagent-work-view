@@ -7,6 +7,7 @@ export { default as Duration } from "./Duration";
 export { default as Timestamp } from "./Timestamp";
 export { default as Avatar } from "./Avatar";
 export { default as AvatarGroup } from "./AvatarGroup";
+export { default as Tooltip } from "./Tooltip";
 export type { ToastMessage, AlertType } from "./AlertToast";
 export type { StatusType } from "./StatusChip";
 export type { SkeletonProps } from "./Skeleton";
@@ -20,3 +21,4 @@ export type {
   AvatarStatus,
 } from "./Avatar";
 export type { AvatarGroupProps } from "./AvatarGroup";
+export type { TooltipPosition } from "./Tooltip";

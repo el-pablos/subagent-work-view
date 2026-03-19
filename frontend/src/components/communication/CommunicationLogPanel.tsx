@@ -54,6 +54,7 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
   const [autoScroll, setAutoScroll] = useState(true);
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // WebSocket connection state
