@@ -1,0 +1,11 @@
+# Live Agents - Robots Configuration
+# https://live-agents.tams.codes/
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://live-agents.tams.codes/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
