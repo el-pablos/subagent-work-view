@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CommandController;
 use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\HealthController;
@@ -11,9 +12,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     // Sessions
+    Route::get('sessions/active', [SessionController::class, 'active']);
     Route::apiResource('sessions', SessionController::class);
-    Route::get('sessions/active', [DashboardController::class, 'activeSessions']);
-    Route::post('sessions/{session}/start', [SessionController::class, 'resume']);
+    Route::post('sessions/{session}/start', [SessionController::class, 'start']);
     Route::post('sessions/{session}/cancel', [SessionController::class, 'cancel']);
     Route::post('sessions/{session}/pause', [SessionController::class, 'pause']);
     Route::post('sessions/{session}/resume', [SessionController::class, 'resume']);
@@ -27,13 +28,13 @@ Route::prefix('v1')->group(function () {
 
     // Agents
     Route::apiResource('agents', AgentController::class);
-    Route::patch('agents/{agent}/status', [AgentController::class, 'update']);
+    Route::patch('agents/{agent}/status', [AgentController::class, 'updateStatus']);
     Route::post('agents/{agent}/heartbeat', [AgentController::class, 'heartbeat']);
     Route::post('agents/{agent}/events', [AgentController::class, 'reportEvents']);
     Route::get('agents/overview/stats', [AgentController::class, 'stats']);
 
     // Commands
-    Route::post('commands/execute', [SessionController::class, 'store']);
+    Route::post('commands/execute', [CommandController::class, 'execute']);
 
     // Messages
     Route::get('sessions/{session}/messages', [MessageController::class, 'index']);
@@ -42,7 +43,7 @@ Route::prefix('v1')->group(function () {
     // Dashboard
     Route::prefix('dashboard')->group(function () {
         Route::get('overview', [DashboardController::class, 'overview']);
-        Route::get('stats', [DashboardController::class, 'overview']);
+        Route::get('stats', [DashboardController::class, 'stats']);
         Route::get('agents', [DashboardController::class, 'agents']);
         Route::get('active-sessions', [DashboardController::class, 'activeSessions']);
         Route::get('metrics', [DashboardController::class, 'metrics']);

@@ -17,6 +17,7 @@ class Session extends Model
 
     protected $fillable = [
         'uuid',
+        'external_id',
         'command_source',
         'original_command',
         'status',

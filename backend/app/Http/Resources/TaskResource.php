@@ -20,6 +20,8 @@ class TaskResource extends JsonResource
             'session_id' => $this->session_id,
             'title' => $this->title,
             'description' => $this->description,
+            'type' => $this->type,
+            'priority' => $this->priority,
             'status' => $this->status,
             'progress' => $this->progress,
             'attempt' => $this->attempt,

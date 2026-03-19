@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\TaskStatus;
 use App\Events\TaskCompleted;
+use App\Events\TaskCreated;
 use App\Events\TaskUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TaskResource;
@@ -33,6 +34,35 @@ class TaskController extends Controller
         return new TaskResource($task->load(['assignedAgent', 'session', 'logs.agent']));
     }
 
+    public function store(Request $request): TaskResource
+    {
+        $validated = $request->validate([
+            'session_id' => 'required|exists:sessions,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string|max:100',
+            'priority' => 'nullable|integer|min:0|max:10',
+            'assigned_agent_id' => 'nullable|exists:agents,id',
+        ]);
+
+        $task = Task::create([
+            'session_id' => $validated['session_id'],
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'type' => $validated['type'] ?? null,
+            'priority' => $validated['priority'] ?? 0,
+            'assigned_agent_id' => $validated['assigned_agent_id'] ?? null,
+            'status' => TaskStatus::PENDING,
+            'progress' => 0,
+        ]);
+
+        $task->load('assignedAgent');
+
+        broadcast(new TaskCreated($task));
+
+        return new TaskResource($task);
+    }
+
     public function update(Request $request, Task $task): TaskResource
     {
         $validated = $request->validate([
@@ -54,6 +84,39 @@ class TaskController extends Controller
         if ($oldStatus !== $task->status && in_array($task->status, ['completed', 'failed'])) {
             broadcast(new TaskCompleted($task));
         }
+
+        return new TaskResource($task);
+    }
+
+    public function assign(Request $request, Task $task): TaskResource
+    {
+        $validated = $request->validate([
+            'agent_id' => 'required|exists:agents,id',
+        ]);
+
+        $task->update([
+            'assigned_agent_id' => $validated['agent_id'],
+            'status' => TaskStatus::ASSIGNED,
+        ]);
+
+        $task->refresh();
+        $task->load('assignedAgent');
+
+        broadcast(new TaskUpdated($task));
+
+        return new TaskResource($task);
+    }
+
+    public function cancel(Task $task): TaskResource
+    {
+        $task->update([
+            'status' => TaskStatus::FAILED,
+            'finished_at' => now(),
+        ]);
+
+        $task->refresh();
+
+        broadcast(new TaskUpdated($task));
 
         return new TaskResource($task);
     }

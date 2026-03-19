@@ -119,6 +119,27 @@ class AgentController extends Controller
     }
 
     /**
+     * Update agent status only.
+     */
+    public function updateStatus(Request $request, Agent $agent): AgentResource
+    {
+        $validated = $request->validate([
+            'status' => ['required', new Enum(AgentStatus::class)],
+        ]);
+
+        $previousStatus = $agent->status;
+
+        $agent->update($validated);
+        $agent->refresh();
+
+        if ($previousStatus !== $agent->status) {
+            broadcast(new AgentStatusChanged($agent));
+        }
+
+        return new AgentResource($agent);
+    }
+
+    /**
      * Soft delete an agent.
      */
     public function destroy(Agent $agent): JsonResponse

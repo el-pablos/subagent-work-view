@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\MessageType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
 use App\Models\Message;
@@ -10,6 +11,7 @@ use App\Events\MessageCreated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\Rules\Enum;
 
 class MessageController extends Controller
 {
@@ -29,7 +31,7 @@ class MessageController extends Controller
             'from_agent_id' => 'nullable|exists:agents,id',
             'to_agent_id' => 'nullable|exists:agents,id',
             'content' => 'required|string|max:65535',
-            'message_type' => 'required|string|in:text,command,result,error,system,thought',
+            'message_type' => ['required', new Enum(MessageType::class)],
             'channel' => 'nullable|string|max:100',
         ]);
 

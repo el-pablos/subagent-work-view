@@ -2,36 +2,35 @@
 
 namespace App\Events;
 
-use App\Models\Agent;
+use App\Models\Session;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AgentStatusChanged implements ShouldBroadcastNow
+class SessionUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Agent $agent) {}
+    public function __construct(public Session $session) {}
 
     public function broadcastOn(): array
     {
         return [
             new Channel('dashboard.global'),
-            new Channel('agent.' . $this->agent->id),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'agent.status_changed';
+        return 'session.updated';
     }
 
     public function broadcastWith(): array
     {
         return [
-            'agent' => $this->agent->toArray(),
+            'session' => $this->session->toArray(),
         ];
     }
 }

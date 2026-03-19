@@ -31,14 +31,7 @@ class TaskUpdated implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->task->id,
-            'uuid' => $this->task->uuid,
-            'session_id' => $this->task->session_id,
-            'title' => $this->task->title,
-            'status' => $this->task->status,
-            'progress' => $this->task->progress,
-            'assigned_agent' => $this->task->assignedAgent?->only(['id', 'uuid', 'name', 'avatar']),
-            'updated_at' => $this->task->updated_at->toISOString(),
+            'task' => $this->task->toArray(),
         ];
     }
 }

@@ -30,14 +30,7 @@ class MessageCreated implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->message->id,
-            'session_id' => $this->message->session_id,
-            'content' => $this->message->content,
-            'message_type' => $this->message->message_type,
-            'channel' => $this->message->channel,
-            'from_agent' => $this->message->fromAgent?->only(['id', 'uuid', 'name', 'avatar']),
-            'to_agent' => $this->message->toAgent?->only(['id', 'uuid', 'name', 'avatar']),
-            'timestamp' => $this->message->timestamp->toISOString(),
+            'message' => $this->message->toArray(),
         ];
     }
 }

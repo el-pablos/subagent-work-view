@@ -25,16 +25,19 @@ class Agent extends Model
         'status',
         'source',
         'external_id',
+        'session_id',
         'current_task',
         'avatar',
         'capacity',
         'priority',
         'capabilities',
+        'metadata',
         'last_seen_at',
     ];
 
     protected $casts = [
         'capabilities' => 'array',
+        'metadata' => 'array',
         'last_seen_at' => 'datetime',
         'status' => AgentStatus::class,
         'type' => AgentType::class,

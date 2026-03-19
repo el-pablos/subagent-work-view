@@ -31,13 +31,7 @@ class TaskCompleted implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->task->id,
-            'uuid' => $this->task->uuid,
-            'session_id' => $this->task->session_id,
-            'title' => $this->task->title,
-            'status' => 'completed',
-            'result' => $this->task->result,
-            'finished_at' => $this->task->finished_at?->toISOString(),
+            'task' => $this->task->toArray(),
         ];
     }
 }

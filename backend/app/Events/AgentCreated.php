@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AgentStatusChanged implements ShouldBroadcastNow
+class AgentCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,13 +19,12 @@ class AgentStatusChanged implements ShouldBroadcastNow
     {
         return [
             new Channel('dashboard.global'),
-            new Channel('agent.' . $this->agent->id),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'agent.status_changed';
+        return 'agent.created';
     }
 
     public function broadcastWith(): array

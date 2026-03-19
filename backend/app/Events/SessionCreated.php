@@ -30,12 +30,7 @@ class SessionCreated implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->session->id,
-            'uuid' => $this->session->uuid,
-            'command_source' => $this->session->command_source,
-            'original_command' => $this->session->original_command,
-            'status' => $this->session->status,
-            'created_at' => $this->session->created_at->toISOString(),
+            'session' => $this->session->toArray(),
         ];
     }
 }

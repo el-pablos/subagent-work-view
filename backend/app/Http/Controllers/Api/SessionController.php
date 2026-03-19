@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\SessionCompleted;
 use App\Events\SessionUpdated;
+use App\Enums\SessionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SessionResource;
 use App\Http\Resources\TaskLogResource;
@@ -75,6 +76,24 @@ class SessionController extends Controller
     }
 
     /**
+     * Return active sessions.
+     */
+    public function active(): AnonymousResourceCollection
+    {
+        $sessions = Session::query()
+            ->whereIn('status', [
+                SessionStatus::QUEUED,
+                SessionStatus::PLANNING,
+                SessionStatus::RUNNING,
+            ])
+            ->with(['agents', 'tasks'])
+            ->orderByDesc('started_at')
+            ->get();
+
+        return SessionResource::collection($sessions);
+    }
+
+    /**
      * Return session with tasks and agents.
      */
     public function show(Session $session): SessionResource
@@ -90,6 +109,23 @@ class SessionController extends Controller
         $session->loadCount('tasks');
 
         return new SessionResource($session);
+    }
+
+    /**
+     * Mark a session as started.
+     */
+    public function start(Session $session): SessionResource
+    {
+        $session->update([
+            'status' => SessionStatus::RUNNING,
+            'started_at' => now(),
+        ]);
+
+        $session->refresh();
+
+        broadcast(new SessionUpdated($session));
+
+        return new SessionResource($session->load(['agents', 'tasks.assignedAgent']));
     }
 
     /**

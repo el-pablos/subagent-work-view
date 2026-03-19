@@ -69,6 +69,11 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function stats(): JsonResponse
+    {
+        return $this->overview();
+    }
+
     public function agents(): JsonResponse
     {
         $agents = Agent::with(['tasks' => function ($query) {

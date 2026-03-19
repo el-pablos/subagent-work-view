@@ -31,10 +31,7 @@ class SessionCompleted implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->session->id,
-            'uuid' => $this->session->uuid,
-            'status' => $this->session->status,
-            'ended_at' => $this->session->ended_at?->toISOString(),
+            'session' => $this->session->toArray(),
         ];
     }
 }
