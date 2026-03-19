@@ -107,9 +107,9 @@ const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
       result = result.filter(
         (agent) =>
           agent.name.toLowerCase().includes(query) ||
-          agent.role?.toLowerCase().includes(query) ||
-          (typeof agent.currentTask === "string" &&
-            agent.currentTask.toLowerCase().includes(query)),
+          (agent.role && agent.role.toLowerCase().includes(query)) ||
+          (agent.currentTask &&
+            String(agent.currentTask).toLowerCase().includes(query)),
       );
     }
 
