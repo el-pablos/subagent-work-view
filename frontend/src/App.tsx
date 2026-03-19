@@ -339,7 +339,7 @@ function App() {
           onSearch={handleSearch}
         />
       </Suspense>
-    </>
+    </ErrorBoundary>
   );
 }
 

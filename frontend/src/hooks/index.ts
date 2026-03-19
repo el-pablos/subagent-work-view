@@ -5,3 +5,5 @@ export * from "./useResponsive";
 export { default as useResponsive } from "./useResponsive";
 export * from "./useCopyToClipboard";
 export { default as useCopyToClipboard } from "./useCopyToClipboard";
+export * from "./useModal";
+export { default as useModal } from "./useModal";
