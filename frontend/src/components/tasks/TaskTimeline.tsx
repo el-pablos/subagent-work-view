@@ -1,5 +1,5 @@
 import React from "react";
-import { TaskHistoryEvent } from "../../types/task";
+import type { TaskHistoryEvent } from "../../types/task";
 
 interface TaskTimelineProps {
   events: TaskHistoryEvent[];

@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import Header, { ConnectionStatus } from "./Header";
+import Header from "./Header";
+import type { ConnectionStatus } from "./Header";
 import HeaderCommandBar from "./HeaderCommandBar";
 import AgentTopologyPanel from "../agents/AgentTopologyPanel";
-import { Agent, AgentConnection } from "../agents/types";
+import type { Agent, AgentConnection } from "../agents/types";
 import ActiveTaskPanel from "../tasks/ActiveTaskPanel";
-import { Task, TaskHistoryEvent } from "../../types/task";
+import type { Task, TaskHistoryEvent } from "../../types/task";
 import CommunicationLogPanel from "../communication/CommunicationLogPanel";
 import TaskTimeline from "../tasks/TaskTimeline";
 import CommandConsole from "../communication/CommandConsole";
-import {
+import type {
   Message,
   Agent as CommunicationAgent,
   CommandSuggestion,
@@ -133,10 +134,8 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
                 agents={communicationAgents}
                 onSendCommand={onSendCommand}
                 onSubscribe={onMessageSubscribe}
-                commandSuggestions={commandSuggestions}
                 isConnected={isConnected}
                 showFilter={true}
-                showConsole={false}
               />
             </div>
           </div>

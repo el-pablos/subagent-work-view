@@ -45,14 +45,6 @@ const formatTimestamp = (timestamp: string): string => {
   });
 };
 
-const formatDuration = (seconds?: number): string => {
-  if (!seconds) return "-";
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}m ${remainingSeconds}s`;
-};
-
 const formatElapsedTime = (startedAt?: string): string => {
   if (!startedAt) return "-";
   const startTime = new Date(startedAt).getTime();

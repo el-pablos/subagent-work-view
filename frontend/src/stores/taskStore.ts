@@ -8,7 +8,8 @@ interface TaskState {
 
 interface TaskActions {
   setTasks: (tasks: Task[]) => void;
-  updateTask: (id: number, updates: Partial<Task>) => void;
+  updateTask: (task: Task) => void;
+  updateTaskPartial: (id: number, updates: Partial<Task>) => void;
   addTask: (task: Task) => void;
   removeTask: (id: number) => void;
   getTask: (id: number) => Task | undefined;
@@ -34,7 +35,12 @@ export const useTaskStore = create<TaskState & TaskActions>()(
         });
       }),
 
-    updateTask: (id, updates) =>
+    updateTask: (task) =>
+      set((state) => {
+        state.tasks[task.id] = task;
+      }),
+
+    updateTaskPartial: (id, updates) =>
       set((state) => {
         if (state.tasks[id]) {
           state.tasks[id] = { ...state.tasks[id], ...updates };

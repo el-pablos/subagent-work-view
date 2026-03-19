@@ -36,7 +36,12 @@ export const useSessionStore = create<SessionState & SessionActions>()(
         });
       }),
 
-    updateSession: (id, updates) =>
+    updateSession: (session) =>
+      set((state) => {
+        state.sessions[session.id] = session;
+      }),
+
+    updateSessionPartial: (id, updates) =>
       set((state) => {
         if (state.sessions[id]) {
           state.sessions[id] = { ...state.sessions[id], ...updates };
