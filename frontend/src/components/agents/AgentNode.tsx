@@ -11,6 +11,7 @@ import {
   tapScale,
 } from "../../lib/animations";
 import { cn } from "../../lib/utils";
+import { detectAgentSource, getSourceInfo } from "../../lib/sourceDetection";
 
 interface AgentNodeProps {
   agent: Agent;
@@ -36,16 +37,6 @@ const getInitials = (name: string): string => {
     .join("");
 };
 
-const getAgentSource = (agent: Agent): "claude" | "openclaw" | "unknown" => {
-  const source = `${agent.source ?? ""} ${agent.uuid} ${agent.id} ${agent.name}`
-    .toLowerCase()
-    .trim();
-
-  if (source.includes("openclaw")) return "openclaw";
-  if (source.includes("claude")) return "claude";
-  return "unknown";
-};
-
 const AgentNode: React.FC<AgentNodeProps> = ({
   agent,
   isSelected = false,
@@ -60,7 +51,8 @@ const AgentNode: React.FC<AgentNodeProps> = ({
   const isWorking = agent.status === "busy" || agent.status === "communicating";
   const showPulseGlow = agent.status === "busy";
   const bgColor = roleColors[agent.role] || "bg-gray-600";
-  const source = getAgentSource(agent);
+  const source = detectAgentSource(agent);
+  const sourceInfo = getSourceInfo(source);
 
   return (
     <motion.button
@@ -120,15 +112,11 @@ const AgentNode: React.FC<AgentNodeProps> = ({
       <span
         className={cn(
           "absolute right-1 top-1 h-2.5 w-2.5 rounded-full border border-slate-900",
-          source === "claude"
-            ? "bg-sky-500"
-            : source === "openclaw"
-              ? "bg-emerald-500"
-              : "bg-slate-500",
+          sourceInfo.bgColor,
         )}
         aria-hidden="true"
       />
-      <span className="sr-only">Source: {source}</span>
+      <span className="sr-only">Source: {sourceInfo.label}</span>
 
       <AnimatePresence>
         {isSelected && (

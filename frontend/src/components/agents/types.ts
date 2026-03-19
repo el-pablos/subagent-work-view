@@ -16,7 +16,7 @@ export interface Agent {
   role: AgentRole;
   status: AgentStatus;
   avatar?: string;
-  source?: 'claude' | 'openclaw' | 'unknown';
+  source?: 'claude' | 'openclaw' | 'copilot-cli' | 'unknown';
   currentTask?: {
     id: string;
     title: string;

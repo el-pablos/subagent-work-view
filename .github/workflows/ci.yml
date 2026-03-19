@@ -55,7 +55,7 @@ jobs:
       - run: php artisan --version
 
   frontend-test:
-    name: Frontend Tests
+    name: Frontend Tests (Vitest)
     runs-on: ubuntu-latest
     needs: frontend-lint-build
     defaults:
@@ -69,12 +69,37 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm test -- --run --reporter=verbose 2>/dev/null || echo "No tests configured yet"
+      - run: npm test -- --reporter=verbose
+
+  frontend-e2e:
+    name: Frontend E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: frontend-lint-build
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
 
   release:
     name: Auto Release
     runs-on: ubuntu-latest
-    needs: [frontend-lint-build, backend-lint]
+    needs: [frontend-lint-build, backend-lint, frontend-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
@@ -83,35 +108,46 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate version
+      - name: Get latest tag and bump patch version
         id: version
         run: |
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION="1.0.${COMMIT_COUNT}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Generated version: ${VERSION}"
+          LATEST_TAG=$(git tag -l 'v*.*.*' --sort=-v:refname | head -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_VERSION="1.0.0"
+          else
+            VERSION="${LATEST_TAG#v}"
+            MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            MINOR=$(echo "$VERSION" | cut -d. -f2)
+            PATCH=$(echo "$VERSION" | cut -d. -f3)
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "🏷️ New version: v${NEW_VERSION} (previous: ${LATEST_TAG:-none})"
 
-      - name: Create tag
+      - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -fa "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}" --force
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
           body: |
-            ## 🚀 Release v${{ steps.version.outputs.version }}
+            ## 🚀 Release ${{ steps.version.outputs.tag }}
 
             ### Changes
             ${{ github.event.head_commit.message }}
 
-            ### Commit
-            - SHA: ${{ github.sha }}
-            - Author: ${{ github.event.head_commit.author.name }}
+            ### Details
+            - **Commit:** `${{ github.sha }}`
+            - **Author:** ${{ github.event.head_commit.author.name }}
+            - **Branch:** `main`
           draft: false
           prerelease: false
           generate_release_notes: true
