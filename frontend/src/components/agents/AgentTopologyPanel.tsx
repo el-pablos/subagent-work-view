@@ -50,6 +50,84 @@ const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
   const [recentlyChangedIds, setRecentlyChangedIds] = useState<Set<string>>(
     new Set(),
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [statusFilters, setStatusFilters] = useState<FilterTag[]>([]);
+
+  // Available status filters
+  const availableStatuses: Array<{
+    status: Agent["status"];
+    label: string;
+    color: FilterTag["color"];
+  }> = [
+    { status: "idle", label: "Idle", color: "gray" },
+    { status: "busy", label: "Busy", color: "green" },
+    { status: "communicating", label: "Communicating", color: "blue" },
+    { status: "error", label: "Error", color: "red" },
+  ];
+
+  // Toggle status filter
+  const toggleStatusFilter = (status: Agent["status"]) => {
+    const existingFilter = statusFilters.find((f) => f.value === status);
+    if (existingFilter) {
+      setStatusFilters((prev) => prev.filter((f) => f.value !== status));
+    } else {
+      const statusConfig = availableStatuses.find((s) => s.status === status);
+      if (statusConfig) {
+        setStatusFilters((prev) => [
+          ...prev,
+          {
+            id: status,
+            label: statusConfig.label,
+            value: status,
+            color: statusConfig.color,
+          },
+        ]);
+      }
+    }
+  };
+
+  // Remove filter by ID
+  const removeFilter = (filterId: string) => {
+    setStatusFilters((prev) => prev.filter((f) => f.id !== filterId));
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setStatusFilters([]);
+  };
+
+  // Filter agents based on search and status filters
+  const filteredAgents = useMemo(() => {
+    let result = agents;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (agent) =>
+          agent.name.toLowerCase().includes(query) ||
+          agent.role?.toLowerCase().includes(query) ||
+          agent.currentTask?.toLowerCase().includes(query),
+      );
+    }
+
+    // Apply status filters
+    if (statusFilters.length > 0) {
+      const statusValues = statusFilters.map((f) => f.value);
+      result = result.filter((agent) => statusValues.includes(agent.status));
+    }
+
+    return result;
+  }, [agents, searchQuery, statusFilters]);
+
+  // Handle search change
+  const handleSearchChange = (value: string) => {
+    setIsSearching(true);
+    setSearchQuery(value);
+    // Simulate search completion
+    setTimeout(() => setIsSearching(false), 300);
+  };
 
   // Sync with external agents prop
   useEffect(() => {
