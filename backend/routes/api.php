@@ -1,12 +1,23 @@
 <?php
 
-use App\Http\Controllers\AgentController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HealthController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\SessionController;
-use App\Http\Controllers\TaskController;
+use App\Http\Controllers\Api\AgentController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\SessionController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Rate limits configured in AppServiceProvider:
+| - api: 60 requests/minute (default for all API routes)
+| - webhook: 1000 requests/minute (use middleware('throttle:webhook') for webhook routes)
+|
+*/
 
 Route::prefix('v1')->group(function () {
     // Sessions
@@ -41,4 +52,9 @@ Route::prefix('v1')->group(function () {
     // Health
     Route::get('health', [HealthController::class, 'check']);
     Route::get('health/agents', [HealthController::class, 'agentHealth']);
+
+    // Webhook routes (use higher rate limit)
+    // Route::middleware('throttle:webhook')->prefix('webhooks')->group(function () {
+    //     // Add webhook routes here
+    // });
 });
