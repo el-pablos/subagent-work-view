@@ -79,7 +79,7 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
       // Notify parent component
       onMessageReceived?.(event.message as unknown as Message);
     },
-    [onMessageReceived]
+    [onMessageReceived],
   );
 
   // Subscribe to WebSocket for realtime messages
@@ -319,7 +319,11 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
         ) : (
           <>
             {filteredMessages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isNew={newMessageIds.has(message.id)}
+              />
             ))}
           </>
         )}

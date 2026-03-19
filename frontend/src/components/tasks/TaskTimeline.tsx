@@ -136,9 +136,86 @@ const calculateDuration = (
 
 const TaskTimeline: React.FC<TaskTimelineProps> = ({
   events,
+  taskId,
   className = "",
+  autoScroll = true,
+  onEventUpdate,
 }) => {
-  if (events.length === 0) {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const [localEvents, setLocalEvents] = useState<TaskHistoryEvent[]>(events);
+  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(
+    null,
+  );
+
+  // Update local events when props change
+  useEffect(() => {
+    setLocalEvents(events);
+  }, [events]);
+
+  // Auto-scroll to latest event
+  const scrollToLatest = useCallback(() => {
+    if (autoScroll && timelineRef.current) {
+      const scrollContainer = timelineRef.current.querySelector(
+        ".overflow-x-auto",
+      ) as HTMLElement;
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          left: scrollContainer.scrollWidth,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [autoScroll]);
+
+  // Subscribe to WebSocket task updates
+  useDashboardWebSocket({
+    onTaskUpdated: useCallback(
+      (event: TaskUpdatedEvent) => {
+        // Filter updates for this specific task if taskId is provided
+        if (taskId && event.task.id !== taskId) return;
+
+        // Create new timeline event from task update
+        const newEvent: TaskHistoryEvent = {
+          id: `event-${Date.now()}`,
+          taskId: event.task.id,
+          type: "progress",
+          timestamp: new Date().toISOString(),
+          data: {
+            progress: event.task.progress,
+            status: event.task.status,
+            agent: event.task.assignedAgent
+              ? {
+                  id: event.task.assignedAgent.id,
+                  name: event.task.assignedAgent.name,
+                }
+              : undefined,
+          },
+        };
+
+        // Update local events
+        setLocalEvents((prevEvents) => {
+          const updatedEvents = [...prevEvents, newEvent];
+          onEventUpdate?.(updatedEvents);
+          return updatedEvents;
+        });
+
+        // Highlight the new event
+        setHighlightedEventId(newEvent.id);
+        setTimeout(() => setHighlightedEventId(null), 2000);
+
+        // Scroll to latest
+        setTimeout(scrollToLatest, 100);
+      },
+      [taskId, onEventUpdate, scrollToLatest],
+    ),
+  });
+
+  // Auto-scroll on mount and when events change
+  useEffect(() => {
+    scrollToLatest();
+  }, [scrollToLatest]);
+
+  if (localEvents.length === 0) {
     return (
       <div className={`text-gray-500 text-sm text-center py-4 ${className}`}>
         No timeline events
@@ -147,14 +224,17 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={timelineRef} className={`relative ${className}`}>
       {/* Horizontal scrollable container */}
-      <div className="overflow-x-auto pb-4">
+      <div className="overflow-x-auto pb-4 scroll-smooth">
         <div className="flex items-start min-w-max px-4">
-          {events.map((event, index) => {
+          {localEvents.map((event, index) => {
             const eventColor = getEventColor(event.type);
-            const duration = calculateDuration(events, index);
-            const isLast = index === events.length - 1;
+            const duration = calculateDuration(localEvents, index);
+            const isLast = index === localEvents.length - 1;
+            const isHighlighted = event.id === highlightedEventId;
+            const isRunning =
+              event.type === "started" || event.type === "progress";
 
             return (
               <div key={event.id} className="flex items-center">

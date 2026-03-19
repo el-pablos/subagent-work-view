@@ -7,6 +7,7 @@ import TypingIndicator from "./TypingIndicator";
 interface AgentNodeProps {
   agent: Agent;
   isSelected?: boolean;
+  isRecentlyChanged?: boolean;
   onClick?: (agent: Agent) => void;
   size?: number;
   className?: string;

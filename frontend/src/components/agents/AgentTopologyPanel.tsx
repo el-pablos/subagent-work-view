@@ -316,37 +316,50 @@ const AgentTopologyPanel: React.FC<AgentTopologyPanelProps> = ({
           {renderConnections()}
         </svg>
 
-        {/* Agent nodes */}
-        {agents.map((agent) => {
-          const position = getPositionById(agent.id);
-          if (!position) return null;
+        {/* Agent nodes with AnimatePresence for enter/exit animations */}
+        <AnimatePresence mode="popLayout">
+          {agents.map((agent) => {
+            const position = getPositionById(agent.id);
+            if (!position) return null;
 
-          return (
-            <motion.div
-              key={agent.id}
-              className="absolute"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: position.x,
-                y: position.y,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-              }}
-              style={{ zIndex: 1 }}
-            >
-              <AgentNode
-                agent={agent}
-                isSelected={selectedAgentId === agent.id}
-                onClick={onAgentSelect}
-              />
-            </motion.div>
-          );
-        })}
+            const isRecentlyChanged = recentlyChangedIds.has(agent.id);
+
+            return (
+              <motion.div
+                key={agent.id}
+                className="absolute"
+                initial={{ opacity: 0, scale: 0, rotate: -180 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  rotate: 0,
+                  x: position.x,
+                  y: position.y,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0,
+                  rotate: 180,
+                  transition: { duration: 0.3, ease: "easeIn" },
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25,
+                  mass: 0.8,
+                }}
+                style={{ zIndex: 1 }}
+              >
+                <AgentNode
+                  agent={agent}
+                  isSelected={selectedAgentId === agent.id}
+                  onClick={onAgentSelect}
+                  isRecentlyChanged={isRecentlyChanged}
+                />
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
 
         {/* Empty state */}
         {agents.length === 0 && (

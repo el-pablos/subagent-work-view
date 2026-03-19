@@ -92,12 +92,30 @@ export function useDashboardWebSocket(options: UseDashboardWebSocketOptions) {
   useEffect(() => {
     const channel = echo.channel(DASHBOARD_CHANNEL);
 
+    // Subscribe to agent spawned
+    channel.listen(
+      `.${WS_EVENTS.AGENT_SPAWNED}`,
+      (event: AgentSpawnedEvent) => {
+        console.log("[WS] Agent spawned:", event);
+        optionsRef.current.onAgentSpawned?.(event);
+      },
+    );
+
     // Subscribe to agent status changes
     channel.listen(
       `.${WS_EVENTS.AGENT_STATUS_CHANGED}`,
       (event: AgentStatusChangedEvent) => {
         console.log("[WS] Agent status changed:", event);
         optionsRef.current.onAgentStatusChanged?.(event);
+      },
+    );
+
+    // Subscribe to agent terminated
+    channel.listen(
+      `.${WS_EVENTS.AGENT_TERMINATED}`,
+      (event: AgentTerminatedEvent) => {
+        console.log("[WS] Agent terminated:", event);
+        optionsRef.current.onAgentTerminated?.(event);
       },
     );
 
@@ -112,6 +130,15 @@ export function useDashboardWebSocket(options: UseDashboardWebSocketOptions) {
       console.log("[WS] Task created:", event);
       optionsRef.current.onTaskCreated?.(event);
     });
+
+    // Subscribe to task progress updates
+    channel.listen(
+      `.${WS_EVENTS.TASK_PROGRESS_UPDATED}`,
+      (event: TaskProgressUpdatedEvent) => {
+        console.log("[WS] Task progress updated:", event);
+        optionsRef.current.onTaskProgressUpdated?.(event);
+      },
+    );
 
     // Subscribe to session updates
     channel.listen(
