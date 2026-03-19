@@ -10,6 +10,7 @@ import { Network } from "lucide-react";
 import type { Agent, AgentConnection, AgentNodePosition } from "./types";
 import AgentNode from "./AgentNode";
 import { echo } from "../../services/websocket";
+import { SearchInput, FilterTags, FilterTag } from "../common";
 
 // WebSocket event types for agents channel
 interface AgentSpawnedEvent {
