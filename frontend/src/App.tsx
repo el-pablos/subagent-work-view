@@ -289,22 +289,33 @@ function App() {
   }, []);
 
   return (
-    <WarRoomLayout
-      sessionId="session-abc123"
-      connectionStatus={connectionStatus}
-      isConnected={connectionStatus === "connected"}
-      agents={mockAgents}
-      agentConnections={mockConnections}
-      selectedAgentId={selectedAgentId}
-      onAgentSelect={handleAgentSelect}
-      tasks={mockTasks}
-      taskHistory={mockTaskHistory}
-      onTaskClick={handleTaskClick}
-      messages={mockMessages}
-      onSendCommand={handleSendCommand}
-      commandSuggestions={mockCommandSuggestions}
-      onSearch={handleSearch}
-    />
+    <Suspense
+      fallback={
+        <div className="h-screen w-screen flex items-center justify-center bg-slate-950">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading War Room...</p>
+          </div>
+        </div>
+      }
+    >
+      <WarRoomLayout
+        sessionId="session-abc123"
+        connectionStatus={connectionStatus}
+        isConnected={connectionStatus === "connected"}
+        agents={mockAgents}
+        agentConnections={mockConnections}
+        selectedAgentId={selectedAgentId}
+        onAgentSelect={handleAgentSelect}
+        tasks={mockTasks}
+        taskHistory={mockTaskHistory}
+        onTaskClick={handleTaskClick}
+        messages={mockMessages}
+        onSendCommand={handleSendCommand}
+        commandSuggestions={mockCommandSuggestions}
+        onSearch={handleSearch}
+      />
+    </Suspense>
   );
 }
 

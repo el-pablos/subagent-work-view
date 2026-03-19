@@ -32,7 +32,7 @@ interface CommunicationLogPanelProps {
  * Features:
  * - Panel header "Agent Communications"
  * - Filter by channel: All, General, Handoff, Alert
- * - Scrollable message list
+ * - Virtual scrolling for thousands of messages
  * - Auto-scroll to bottom on new messages
  * - Shows agent avatars in messages
  */
@@ -54,7 +54,6 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
   const [autoScroll, setAutoScroll] = useState(true);
   const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // WebSocket connection state
