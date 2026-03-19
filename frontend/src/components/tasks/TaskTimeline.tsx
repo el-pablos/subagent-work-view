@@ -242,14 +242,23 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
                 <div className="flex flex-col items-center">
                   {/* Event circle */}
                   <div
-                    className={`relative w-10 h-10 rounded-full ${eventColor.bg} border-2 ${eventColor.border} flex items-center justify-center ${eventColor.text} text-sm font-medium z-10 transition-all hover:scale-110`}
+                    className={`relative w-10 h-10 rounded-full ${eventColor.bg} border-2 ${eventColor.border} flex items-center justify-center ${eventColor.text} text-sm font-medium z-10 transition-all duration-300 hover:scale-110 ${
+                      isHighlighted
+                        ? "scale-125 ring-4 ring-cyan-400/50"
+                        : ""
+                    }`}
                   >
                     {getEventIcon(event.type)}
-                    {/* Pulse animation for last event if in progress */}
-                    {isLast && event.type === "started" && (
-                      <div
-                        className={`absolute inset-0 rounded-full ${eventColor.border} border-2 animate-ping opacity-30`}
-                      />
+                    {/* Pulse animation for running tasks */}
+                    {isLast && isRunning && (
+                      <>
+                        <div
+                          className={`absolute inset-0 rounded-full ${eventColor.border} border-2 animate-ping opacity-30`}
+                        />
+                        <div
+                          className={`absolute inset-0 rounded-full ${eventColor.bg} animate-pulse`}
+                        />
+                      </>
                     )}
                   </div>
 
