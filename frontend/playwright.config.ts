@@ -21,6 +21,6 @@ export default defineConfig({
     command: 'npm run build && npm run preview',
     url: 'http://localhost:4173',
     timeout: 30_000,
-    reuseExistingServer: false,
+    reuseExistingServer: true,
   },
 });
