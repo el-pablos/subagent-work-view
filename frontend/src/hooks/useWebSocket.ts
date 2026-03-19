@@ -245,8 +245,11 @@ export interface UseWebSocketWithStoreOptions {
 export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
   const {
     sessionId,
+    addAgent,
     updateAgent,
+    removeAgent,
     updateTask,
+    updateTaskPartial,
     addTask,
     updateSession,
     addMessage,
@@ -254,11 +257,26 @@ export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
 
   // Dashboard-level subscriptions (always active)
   useDashboardWebSocket({
+    onAgentSpawned: useCallback(
+      (event: AgentSpawnedEvent) => {
+        addAgent?.(event.agent);
+      },
+      [addAgent],
+    ),
     onAgentStatusChanged: useCallback(
       (event: AgentStatusChangedEvent) => {
         updateAgent?.(event.agent);
       },
       [updateAgent],
+    ),
+    onAgentTerminated: useCallback(
+      (event: AgentTerminatedEvent) => {
+        // Update agent status to offline
+        updateAgent?.(event.agent);
+        // Optionally remove from store after delay
+        // setTimeout(() => removeAgent?.(event.agent.id), 5000);
+      },
+      [updateAgent, removeAgent],
     ),
     onTaskUpdated: useCallback(
       (event: TaskUpdatedEvent) => {
@@ -271,6 +289,12 @@ export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
         addTask?.(event.task);
       },
       [addTask],
+    ),
+    onTaskProgressUpdated: useCallback(
+      (event: TaskProgressUpdatedEvent) => {
+        updateTaskPartial?.(event.task.id, { progress: event.progress });
+      },
+      [updateTaskPartial],
     ),
     onSessionUpdated: useCallback(
       (event: SessionUpdatedEvent) => {
@@ -294,6 +318,12 @@ export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
         addTask?.(event.task);
       },
       [addTask],
+    ),
+    onTaskProgressUpdated: useCallback(
+      (event: TaskProgressUpdatedEvent) => {
+        updateTaskPartial?.(event.task.id, { progress: event.progress });
+      },
+      [updateTaskPartial],
     ),
     onMessageCreated: useCallback(
       (event: MessageCreatedEvent) => {

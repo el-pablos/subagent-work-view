@@ -16,12 +16,12 @@ export const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 /**
@@ -31,8 +31,8 @@ export const fadeInDelayed: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.3, delay: 0.2, ease: "easeOut" }
-  }
+    transition: { duration: 0.3, delay: 0.2, ease: "easeOut" },
+  },
 };
 
 /**
@@ -41,21 +41,21 @@ export const fadeInDelayed: Variants = {
 export const scaleIn: Variants = {
   hidden: {
     opacity: 0,
-    scale: 0.8
+    scale: 0.8,
   },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
       duration: 0.3,
-      ease: [0.4, 0.0, 0.2, 1] // easeOutCubic
-    }
+      ease: [0.4, 0.0, 0.2, 1], // easeOutCubic
+    },
   },
   exit: {
     opacity: 0,
     scale: 0.8,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 /**
@@ -64,7 +64,7 @@ export const scaleIn: Variants = {
 export const scaleInBounce: Variants = {
   hidden: {
     opacity: 0,
-    scale: 0.3
+    scale: 0.3,
   },
   visible: {
     opacity: 1,
@@ -72,14 +72,14 @@ export const scaleInBounce: Variants = {
     transition: {
       type: "spring",
       stiffness: 300,
-      damping: 20
-    }
+      damping: 20,
+    },
   },
   exit: {
     opacity: 0,
     scale: 0.3,
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 // ============================================================================
@@ -92,18 +92,18 @@ export const scaleInBounce: Variants = {
 export const slideInFromTop: Variants = {
   hidden: {
     opacity: 0,
-    y: -20
+    y: -20,
   },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     y: -20,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 /**
@@ -112,18 +112,18 @@ export const slideInFromTop: Variants = {
 export const slideInFromBottom: Variants = {
   hidden: {
     opacity: 0,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     y: 20,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 /**
@@ -132,18 +132,18 @@ export const slideInFromBottom: Variants = {
 export const slideInFromLeft: Variants = {
   hidden: {
     opacity: 0,
-    x: -20
+    x: -20,
   },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     x: -20,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 /**
@@ -152,18 +152,18 @@ export const slideInFromLeft: Variants = {
 export const slideInFromRight: Variants = {
   hidden: {
     opacity: 0,
-    x: 20
+    x: 20,
   },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     x: 20,
-    transition: { duration: 0.2, ease: "easeIn" }
-  }
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 // ============================================================================
@@ -179,16 +179,16 @@ export const staggerContainer: Variants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.05
-    }
+      delayChildren: 0.05,
+    },
   },
   exit: {
     opacity: 0,
     transition: {
       staggerChildren: 0.05,
-      staggerDirection: -1
-    }
-  }
+      staggerDirection: -1,
+    },
+  },
 };
 
 /**
@@ -200,9 +200,9 @@ export const staggerContainerFast: Variants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.05,
-      delayChildren: 0.02
-    }
-  }
+      delayChildren: 0.02,
+    },
+  },
 };
 
 /**
@@ -211,18 +211,18 @@ export const staggerContainerFast: Variants = {
 export const listItem: Variants = {
   hidden: {
     opacity: 0,
-    y: 10
+    y: 10,
   },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     y: -10,
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 /**
@@ -232,20 +232,20 @@ export const listItemScale: Variants = {
   hidden: {
     opacity: 0,
     scale: 0.9,
-    y: 10
+    y: 10,
   },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" }
+    transition: { duration: 0.3, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     scale: 0.9,
     y: -10,
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 // ============================================================================
@@ -259,12 +259,12 @@ export const pageTransitionFade: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.4, ease: "easeInOut" }
+    transition: { duration: 0.4, ease: "easeInOut" },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.3, ease: "easeInOut" }
-  }
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
 };
 
 /**
@@ -273,24 +273,24 @@ export const pageTransitionFade: Variants = {
 export const pageTransitionSlide: Variants = {
   hidden: {
     opacity: 0,
-    x: 100
+    x: 100,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.4,
-      ease: [0.4, 0.0, 0.2, 1]
-    }
+      ease: [0.4, 0.0, 0.2, 1],
+    },
   },
   exit: {
     opacity: 0,
     x: -100,
     transition: {
       duration: 0.3,
-      ease: [0.4, 0.0, 0.6, 1]
-    }
-  }
+      ease: [0.4, 0.0, 0.6, 1],
+    },
+  },
 };
 
 /**
@@ -299,18 +299,18 @@ export const pageTransitionSlide: Variants = {
 export const pageTransitionScale: Variants = {
   hidden: {
     opacity: 0,
-    scale: 0.95
+    scale: 0.95,
   },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" }
+    transition: { duration: 0.4, ease: "easeOut" },
   },
   exit: {
     opacity: 0,
     scale: 1.05,
-    transition: { duration: 0.3, ease: "easeIn" }
-  }
+    transition: { duration: 0.3, ease: "easeIn" },
+  },
 };
 
 // ============================================================================
@@ -324,7 +324,7 @@ export const agentSpawn: Variants = {
   hidden: {
     opacity: 0,
     scale: 0,
-    rotate: -180
+    rotate: -180,
   },
   visible: {
     opacity: 1,
@@ -334,9 +334,9 @@ export const agentSpawn: Variants = {
       type: "spring",
       stiffness: 200,
       damping: 15,
-      duration: 0.6
-    }
-  }
+      duration: 0.6,
+    },
+  },
 };
 
 /**
@@ -349,9 +349,9 @@ export const agentTerminate: Variants = {
     rotate: 180,
     transition: {
       duration: 0.5,
-      ease: "easeIn"
-    }
-  }
+      ease: "easeIn",
+    },
+  },
 };
 
 /**
@@ -362,8 +362,8 @@ export const agentPulse = {
   transition: {
     duration: 2,
     repeat: Infinity,
-    ease: "easeInOut"
-  }
+    ease: "easeInOut",
+  },
 };
 
 // ============================================================================
@@ -377,7 +377,7 @@ export const taskCardEnter: Variants = {
   hidden: {
     opacity: 0,
     x: -20,
-    scale: 0.95
+    scale: 0.95,
   },
   visible: {
     opacity: 1,
@@ -385,15 +385,15 @@ export const taskCardEnter: Variants = {
     scale: 1,
     transition: {
       duration: 0.3,
-      ease: "easeOut"
-    }
+      ease: "easeOut",
+    },
   },
   exit: {
     opacity: 0,
     x: 20,
     scale: 0.95,
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 /**
@@ -402,7 +402,7 @@ export const taskCardEnter: Variants = {
 export const progressFill = {
   initial: { width: 0 },
   animate: { width: "100%" },
-  transition: { duration: 0.5, ease: "easeOut" }
+  transition: { duration: 0.5, ease: "easeOut" },
 };
 
 // ============================================================================
@@ -416,7 +416,7 @@ export const messageBubbleEnter: Variants = {
   hidden: {
     opacity: 0,
     x: -20,
-    scale: 0.95
+    scale: 0.95,
   },
   visible: {
     opacity: 1,
@@ -425,9 +425,9 @@ export const messageBubbleEnter: Variants = {
     transition: {
       type: "spring",
       stiffness: 300,
-      damping: 25
-    }
-  }
+      damping: 25,
+    },
+  },
 };
 
 /**
@@ -438,8 +438,8 @@ export const messageBubbleExit: Variants = {
     opacity: 0,
     x: 20,
     scale: 0.95,
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 /**
@@ -448,13 +448,13 @@ export const messageBubbleExit: Variants = {
 export const systemMessage: Variants = {
   hidden: {
     opacity: 0,
-    scale: 0.9
+    scale: 0.9,
   },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3, ease: "easeOut" }
-  }
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
 };
 
 // ============================================================================
@@ -468,13 +468,13 @@ export const panelExpand: Variants = {
   collapsed: {
     height: 0,
     opacity: 0,
-    transition: { duration: 0.3, ease: "easeInOut" }
+    transition: { duration: 0.3, ease: "easeInOut" },
   },
   expanded: {
     height: "auto",
     opacity: 1,
-    transition: { duration: 0.3, ease: "easeInOut" }
-  }
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
 };
 
 /**
@@ -483,7 +483,7 @@ export const panelExpand: Variants = {
 export const panelSlideIn: Variants = {
   hidden: {
     x: "100%",
-    opacity: 0
+    opacity: 0,
   },
   visible: {
     x: 0,
@@ -491,14 +491,14 @@ export const panelSlideIn: Variants = {
     transition: {
       type: "spring",
       stiffness: 300,
-      damping: 30
-    }
+      damping: 30,
+    },
   },
   exit: {
     x: "100%",
     opacity: 0,
-    transition: { duration: 0.3, ease: "easeInOut" }
-  }
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
 };
 
 // ============================================================================
@@ -512,13 +512,13 @@ export const buttonHover = {
   hover: {
     y: -2,
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-    transition: { duration: 0.2 }
+    transition: { duration: 0.2 },
   },
   tap: {
     y: 0,
     scale: 0.98,
-    transition: { duration: 0.1 }
-  }
+    transition: { duration: 0.1 },
+  },
 };
 
 /**
@@ -527,8 +527,8 @@ export const buttonHover = {
 export const iconRotate = {
   hover: {
     rotate: 90,
-    transition: { duration: 0.3 }
-  }
+    transition: { duration: 0.3 },
+  },
 };
 
 /**
@@ -540,9 +540,9 @@ export const iconSpin = {
     transition: {
       duration: 1,
       repeat: Infinity,
-      ease: "linear"
-    }
-  }
+      ease: "linear",
+    },
+  },
 };
 
 /**
@@ -551,8 +551,8 @@ export const iconSpin = {
 export const shake: Variants = {
   shake: {
     x: [0, -10, 10, -10, 10, 0],
-    transition: { duration: 0.4 }
-  }
+    transition: { duration: 0.4 },
+  },
 };
 
 /**
@@ -563,9 +563,9 @@ export const bounce: Variants = {
     y: [0, -10, 0],
     transition: {
       duration: 0.5,
-      ease: "easeOut"
-    }
-  }
+      ease: "easeOut",
+    },
+  },
 };
 
 // ============================================================================
@@ -581,9 +581,9 @@ export const skeletonPulse = {
     transition: {
       duration: 1.5,
       repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 /**
@@ -595,9 +595,9 @@ export const spinnerRotate = {
     transition: {
       duration: 1,
       repeat: Infinity,
-      ease: "linear"
-    }
-  }
+      ease: "linear",
+    },
+  },
 };
 
 /**
@@ -610,9 +610,9 @@ export const dotsLoading = {
       duration: 0.6,
       repeat: Infinity,
       delay: i * 0.1,
-      ease: "easeInOut"
-    }
-  })
+      ease: "easeInOut",
+    },
+  }),
 };
 
 // ============================================================================
@@ -625,15 +625,18 @@ export const dotsLoading = {
 export const createSpring = (stiffness = 300, damping = 25) => ({
   type: "spring" as const,
   stiffness,
-  damping
+  damping,
 });
 
 /**
  * Create a custom ease transition
  */
-export const createEase = (duration = 0.3, ease: string | number[] = "easeOut") => ({
+export const createEase = (
+  duration = 0.3,
+  ease: string | number[] = "easeOut",
+) => ({
   duration,
-  ease
+  ease,
 });
 
 /**
@@ -641,5 +644,5 @@ export const createEase = (duration = 0.3, ease: string | number[] = "easeOut") 
  */
 export const createStagger = (staggerChildren = 0.1, delayChildren = 0) => ({
   staggerChildren,
-  delayChildren
+  delayChildren,
 });
