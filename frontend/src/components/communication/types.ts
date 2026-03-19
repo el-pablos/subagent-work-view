@@ -17,6 +17,7 @@ export interface Message {
   sessionId: string;
   channel: MessageChannel;
   type: MessageType;
+  source?: "claude" | "openclaw" | "unknown";
   content: string;
   timestamp: string;
   sender?: Agent;

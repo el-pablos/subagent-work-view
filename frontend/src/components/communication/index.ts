@@ -1,4 +1,4 @@
-// Communication components exports
+// Communication component exports
 
 export { default as CommunicationLogPanel } from "./CommunicationLogPanel";
 export { default as MessageBubble } from "./MessageBubble";

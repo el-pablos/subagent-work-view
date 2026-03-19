@@ -68,6 +68,24 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
     return messages.filter((msg) => msg.channel === selectedChannel);
   }, [messages, selectedChannel]);
 
+  const messageCounts = useMemo(
+    () =>
+      messages.reduce(
+        (counts, message) => {
+          counts[message.channel] = (counts[message.channel] ?? 0) + 1;
+          counts.all += 1;
+          return counts;
+        },
+        {
+          all: 0,
+          general: 0,
+          handoff: 0,
+          alert: 0,
+        } as Record<MessageChannel | "all", number>,
+      ),
+    [messages],
+  );
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (autoScroll && messagesEndRef.current) {
@@ -233,6 +251,7 @@ const CommunicationLogPanel: React.FC<CommunicationLogPanelProps> = ({
           <MessageFilter
             selectedChannel={selectedChannel}
             onChannelChange={setSelectedChannel}
+            messageCounts={messageCounts}
           />
         )}
       </div>
