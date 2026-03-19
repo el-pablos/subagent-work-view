@@ -71,3 +71,35 @@ export const useAgentStore = create<AgentState & AgentActions>()(
       }),
   })),
 );
+
+// Selectors for optimized re-renders
+export const useAgentsArray = () =>
+  useAgentStore((state) => Object.values(state.agents));
+
+export const useSelectedAgentId = () =>
+  useAgentStore((state) => state.selectedAgentId);
+
+export const useSelectedAgent = () =>
+  useAgentStore((state) => {
+    if (state.selectedAgentId === null) return undefined;
+    return state.agents[state.selectedAgentId];
+  });
+
+export const useAgentById = (id: number | null) =>
+  useAgentStore((state) => (id ? state.agents[id] : undefined));
+
+export const useAgentsByStatus = (status: AgentStatus) =>
+  useAgentStore((state) =>
+    Object.values(state.agents).filter((agent) => agent.status === status),
+  );
+
+export const useAgentActions = () =>
+  useAgentStore(
+    useShallow((state) => ({
+      setAgents: state.setAgents,
+      updateAgent: state.updateAgent,
+      updateAgentPartial: state.updateAgentPartial,
+      selectAgent: state.selectAgent,
+      clearAgents: state.clearAgents,
+    })),
+  );

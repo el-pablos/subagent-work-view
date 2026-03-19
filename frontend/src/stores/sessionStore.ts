@@ -103,7 +103,9 @@ export const useSessionById = (id: number | null) =>
 
 export const useSessionsByStatus = (status: SessionStatus) =>
   useSessionStore((state) =>
-    Object.values(state.sessions).filter((session) => session.status === status)
+    Object.values(state.sessions).filter(
+      (session) => session.status === status,
+    ),
   );
 
 export const useSessionActions = () =>
@@ -115,5 +117,5 @@ export const useSessionActions = () =>
       addSession: state.addSession,
       setActiveSession: state.setActiveSession,
       clearSessions: state.clearSessions,
-    }))
+    })),
   );

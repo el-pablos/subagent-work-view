@@ -101,7 +101,6 @@ import {
   Calendar,
   Sun,
   Moon,
-
   type LucideIcon,
   type LucideProps,
 } from "lucide-react";
@@ -309,7 +308,9 @@ export const SyncingIcon: React.FC<AnimatedIconProps> = ({
 /**
  * Bounce Icon - Bouncing notification or attention icon
  */
-export const BounceIcon: React.FC<AnimatedIconProps & { icon?: LucideIcon }> = ({
+export const BounceIcon: React.FC<
+  AnimatedIconProps & { icon?: LucideIcon }
+> = ({
   size = "md",
   color,
   className = "",
@@ -349,7 +350,9 @@ export const BounceIcon: React.FC<AnimatedIconProps & { icon?: LucideIcon }> = (
 /**
  * Breathing Icon - Subtle scale animation for active states
  */
-export const BreathingIcon: React.FC<AnimatedIconProps & { icon?: LucideIcon }> = ({
+export const BreathingIcon: React.FC<
+  AnimatedIconProps & { icon?: LucideIcon }
+> = ({
   size = "md",
   color,
   className = "",
@@ -462,10 +465,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
   className = "",
 }) => {
   return (
-    <div
-      className={`inline-flex items-center ${className}`}
-      style={{ gap }}
-    >
+    <div className={`inline-flex items-center ${className}`} style={{ gap }}>
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
@@ -495,14 +495,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
  */
 export const ActionIcon: React.FC<
   AnimatedIconProps & { icon: LucideIcon; onClick?: () => void }
-> = ({
-  size = "md",
-  color,
-  className = "",
-  icon: Icon,
-  onClick,
-  ...props
-}) => {
+> = ({ size = "md", color, className = "", icon: Icon, onClick, ...props }) => {
   const resolvedSize = resolveSize(size);
 
   return (
@@ -522,7 +515,13 @@ export const ActionIcon: React.FC<
 // Status Indicator Component
 // ============================================================================
 
-export type StatusType = "success" | "warning" | "error" | "info" | "loading" | "idle";
+export type StatusType =
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
+  | "loading"
+  | "idle";
 
 export interface StatusIndicatorProps {
   /** Status type */
@@ -574,10 +573,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
         <Icon size={resolvedSize} color={config.color} />
       )}
       {showLabel && (
-        <span
-          className="text-sm font-medium"
-          style={{ color: config.color }}
-        >
+        <span className="text-sm font-medium" style={{ color: config.color }}>
           {label || config.label}
         </span>
       )}

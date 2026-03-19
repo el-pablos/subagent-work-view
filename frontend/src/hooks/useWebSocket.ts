@@ -190,6 +190,18 @@ export function useSessionWebSocket(options: UseSessionWebSocketOptions) {
       optionsRef.current.onTaskCreated?.(event);
     });
 
+    // Subscribe to task progress updates for this session
+    channel.listen(
+      `.${WS_EVENTS.TASK_PROGRESS_UPDATED}`,
+      (event: TaskProgressUpdatedEvent) => {
+        console.log(
+          `[WS] Session ${sessionId} - Task progress updated:`,
+          event,
+        );
+        optionsRef.current.onTaskProgressUpdated?.(event);
+      },
+    );
+
     // Subscribe to messages for this session
     channel.listen(
       `.${WS_EVENTS.MESSAGE_CREATED}`,
