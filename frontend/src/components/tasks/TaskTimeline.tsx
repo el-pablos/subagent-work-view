@@ -319,13 +319,14 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
       </div>
 
       {/* Time markers at the bottom */}
-      {events.length >= 2 && (
+      {localEvents.length >= 2 && (
         <div className="flex justify-between px-4 mt-2 border-t border-gray-800 pt-2">
           <div className="text-xs text-gray-600">
-            Start: {formatTimestamp(events[0].timestamp)}
+            Start: {formatTimestamp(localEvents[0].timestamp)}
           </div>
           <div className="text-xs text-gray-600">
-            Latest: {formatTimestamp(events[events.length - 1].timestamp)}
+            Latest:{" "}
+            {formatTimestamp(localEvents[localEvents.length - 1].timestamp)}
           </div>
         </div>
       )}
