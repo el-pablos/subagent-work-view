@@ -83,6 +83,11 @@ return [
             'permission' => 0664,
         ],
 
+        'notifications' => [
+            'driver' => 'custom',
+            'via' => \App\Logging\CustomLoggerFactory::class,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
