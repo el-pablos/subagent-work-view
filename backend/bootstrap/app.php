@@ -15,5 +15,24 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi('api');
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->report(function (Throwable $e) {
+            // Log critical errors to notification channel
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+                if ($e->getStatusCode() >= 500) {
+                    \Illuminate\Support\Facades\Log::channel('notifications')->error($e->getMessage(), [
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                }
+            } elseif (!$e instanceof \Illuminate\Validation\ValidationException) {
+                \Illuminate\Support\Facades\Log::channel('notifications')->error($e->getMessage(), [
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        });
     })->create();
