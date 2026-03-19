@@ -144,6 +144,59 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Structured logging channel for agent events
+        'structured' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/structured.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+            'permission' => 0664,
+            'formatter' => ContextFormatter::class,
+            'tap' => [
+                \App\Logging\StructuredLogTap::class,
+            ],
+        ],
+
+        // Agent lifecycle events
+        'agents' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/agents.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+            'permission' => 0664,
+            'tap' => [
+                \App\Logging\StructuredLogTap::class,
+            ],
+        ],
+
+        // Task transition events
+        'tasks' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/tasks.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+            'permission' => 0664,
+            'tap' => [
+                \App\Logging\StructuredLogTap::class,
+            ],
+        ],
+
+        // API request logs
+        'api' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/api.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+            'permission' => 0664,
+            'tap' => [
+                \App\Logging\StructuredLogTap::class,
+            ],
+        ],
+
     ],
 
 ];
