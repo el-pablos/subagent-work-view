@@ -88,7 +88,6 @@ export function CommunicationExample() {
         messages={messages}
         agents={agents}
         onSendCommand={handleSendCommand}
-        isConnected={isConnected}
         showFilter={true}
       />
     </div>

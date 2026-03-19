@@ -4,6 +4,7 @@ import { Message, MessageType } from "./types";
 interface MessageBubbleProps {
   message: Message;
   className?: string;
+  isNew?: boolean;
 }
 
 /**
