@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import { WarRoomLayout } from "./components/layout";
+import { ToastContainer, NotificationDrawer } from "./components/common";
+import NotificationDemo from "./components/common/NotificationDemo";
 import type { ConnectionStatus } from "./components/layout/Header";
 import type { Agent, AgentConnection } from "./components/agents/types";
 import type { Task, TaskHistoryEvent } from "./types/task";
@@ -287,6 +289,7 @@ function App() {
   }, []);
 
   return (
+    <>
     <WarRoomLayout
       sessionId="session-abc123"
       connectionStatus={connectionStatus}
@@ -303,6 +306,10 @@ function App() {
       commandSuggestions={mockCommandSuggestions}
       onSearch={handleSearch}
     />
+    <ToastContainer />
+    <NotificationDrawer />
+    <NotificationDemo />
+    </>
   );
 }
 

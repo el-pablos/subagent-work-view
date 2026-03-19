@@ -10,32 +10,17 @@ declare global {
 
 window.Pusher = Pusher;
 
-const wsHost =
-  import.meta.env.VITE_PUSHER_HOST || window.location.hostname || "localhost";
-const wsPort = Number(import.meta.env.VITE_PUSHER_PORT) || 6001;
-const wsScheme = import.meta.env.VITE_PUSHER_SCHEME || "http";
-
-const pusherConfig = {
-  key: import.meta.env.VITE_PUSHER_APP_KEY || "",
-  cluster: import.meta.env.VITE_PUSHER_CLUSTER || "mt1",
-  wsHost,
-  wsPort,
-  wssPort: wsPort,
-  forceTLS: wsScheme === "https",
-  enabledTransports: ["ws", "wss"] as const,
-  disableStats: true,
-};
-
 const echo = new Echo({
   broadcaster: "pusher",
-  key: pusherConfig.key,
-  cluster: pusherConfig.cluster,
-  wsHost: pusherConfig.wsHost,
-  wsPort: pusherConfig.wsPort,
-  wssPort: pusherConfig.wssPort,
-  forceTLS: pusherConfig.forceTLS,
-  enabledTransports: [...pusherConfig.enabledTransports],
-  disableStats: pusherConfig.disableStats,
+  key: import.meta.env.VITE_WS_KEY || "app-key",
+  cluster: import.meta.env.VITE_WS_CLUSTER || "mt1",
+  wsHost: import.meta.env.VITE_WS_HOST || "localhost",
+  wsPort: Number(import.meta.env.VITE_WS_PORT) || 6001,
+  wssPort: Number(import.meta.env.VITE_WS_PORT) || 6001,
+  forceTLS: false,
+  encrypted: false,
+  disableStats: true,
+  enabledTransports: ["ws", "wss"],
 });
 
 window.Echo = echo;

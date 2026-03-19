@@ -22,6 +22,7 @@ export { HeartbeatIndicator } from "./HeartbeatIndicator";
 export { SourceBadge } from "./SourceBadge";
 export { default as ToastContainer } from "./ToastContainer";
 export { default as NotificationBell } from "./NotificationBell";
+export { default as NotificationDrawer } from "./NotificationDrawer";
 export type { ToastMessage, AlertType } from "./AlertToast";
 export type { StatusType } from "./StatusChip";
 export type { ConnectionState, ConnectionStatusProps } from "./ConnectionStatus";

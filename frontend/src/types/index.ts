@@ -1,10 +1,11 @@
-// Enums matching backend
+// Backend-facing API types
 export type AgentStatus =
   | "idle"
   | "busy"
   | "communicating"
   | "error"
   | "offline";
+
 export type AgentType =
   | "planner"
   | "architect"
@@ -13,6 +14,7 @@ export type AgentType =
   | "tester"
   | "docs"
   | "devops";
+
 export type TaskStatus =
   | "pending"
   | "assigned"
@@ -21,6 +23,7 @@ export type TaskStatus =
   | "completed"
   | "failed"
   | "cancelled";
+
 export type SessionStatus =
   | "queued"
   | "planning"
@@ -28,10 +31,25 @@ export type SessionStatus =
   | "completed"
   | "failed"
   | "cancelled";
-export type MessageType = "agent" | "system" | "user" | "broadcast";
-export type MessageChannel = "general" | "handoff" | "alert" | "debug";
 
-// Agent Interface
+export type MessageType =
+  | "agent"
+  | "system"
+  | "user"
+  | "broadcast"
+  | "text"
+  | "command"
+  | "result"
+  | "error"
+  | "thought";
+
+export type MessageChannel =
+  | "general"
+  | "handoff"
+  | "alert"
+  | "debug"
+  | string;
+
 export interface Agent {
   id: number;
   uuid: string;
@@ -40,81 +58,84 @@ export interface Agent {
   status: AgentStatus;
   current_task?: string | null;
   avatar?: string | null;
-  capacity: number;
-  priority: number;
+  source?: string;
+  external_id?: string | null;
+  capacity?: number;
+  priority?: number;
   capabilities?: string[];
   last_seen_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at?: string | null;
+  updated_at?: string | null;
   deleted_at?: string | null;
 }
 
-// Task Interface
 export interface Task {
   id: number;
   uuid: string;
   session_id: number;
   title: string;
-  description: string;
+  description?: string | null;
   status: TaskStatus;
   assigned_agent_id?: number | null;
+  assigned_agent?: Agent | null;
+  assignedAgent?: Agent;
   progress: number;
-  attempt: number;
-  max_attempt: number;
-  payload?: Record<string, any>;
-  result?: Record<string, any>;
-  dependencies?: number[];
+  attempt?: number;
+  max_attempt?: number;
+  payload?: Record<string, unknown> | null;
+  result?: Record<string, unknown> | null;
+  dependencies?: number[] | null;
   queued_at?: string | null;
   started_at?: string | null;
   finished_at?: string | null;
-  created_at: string;
-  updated_at: string;
-  // Relations
-  assignedAgent?: Agent;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
-// Session Interface
 export interface Session {
   id: number;
   uuid: string;
   command_source: string;
   original_command: string;
   status: SessionStatus;
-  context?: Record<string, any>;
+  context?: Record<string, unknown> | null;
   created_by?: number | null;
   started_at?: string | null;
   ended_at?: string | null;
-  created_at: string;
-  updated_at: string;
-  // Relations
+  created_at?: string | null;
+  updated_at?: string | null;
   tasks?: Task[];
+  tasks_count?: number;
   messages?: Message[];
 }
 
-// Message Interface
 export interface Message {
   id: number;
   session_id: number;
   from_agent_id?: number | null;
   to_agent_id?: number | null;
+  from_agent?: Agent | null;
+  to_agent?: Agent | null;
+  fromAgent?: Agent;
+  toAgent?: Agent;
   content: string;
   message_type: MessageType;
   channel: MessageChannel;
-  timestamp: string;
-  created_at: string;
-  updated_at: string;
-  // Relations
-  fromAgent?: Agent;
-  toAgent?: Agent;
+  timestamp?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
-// TaskLog Interface (for reference)
 export interface TaskLog {
   id: number;
   task_id: number;
-  agent_id?: number | null;
   action: string;
-  details?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
+  notes?: string | null;
+  meta?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  agent?: Agent | null;
+  agent_id?: number | null;
+  timestamp: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 }

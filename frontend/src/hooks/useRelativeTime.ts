@@ -1,96 +1,44 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
-export interface UseRelativeTimeOptions {
-  updateInterval?: number; // in milliseconds, default 1000
-  enabled?: boolean;
-}
-
-export interface RelativeTimeResult {
-  relativeTime: string;
-  absoluteTime: string;
-}
-
-/**
- * Hook untuk menampilkan waktu relatif (misal: "2 menit yang lalu")
- * yang secara otomatis update setiap interval tertentu.
- */
 export function useRelativeTime(
-  timestamp: Date | string | number | null | undefined,
-  options: UseRelativeTimeOptions = {}
-): RelativeTimeResult {
-  const { updateInterval = 1000, enabled = true } = options;
-  const [, forceUpdate] = useState(0);
-  const intervalRef = useRef<number | null>(null);
+  timestamp: string | number | Date,
+  interval = 1000,
+): string {
+  const [relative, setRelative] = useState(() => formatRelative(timestamp));
 
   useEffect(() => {
-    if (!enabled || !timestamp) {
-      return;
-    }
+    setRelative(formatRelative(timestamp));
 
-    // Force update setiap interval
-    intervalRef.current = window.setInterval(() => {
-      forceUpdate((prev) => prev + 1);
-    }, updateInterval);
+    const timer = window.setInterval(() => {
+      setRelative(formatRelative(timestamp));
+    }, interval);
 
-    return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [timestamp, updateInterval, enabled]);
+    return () => window.clearInterval(timer);
+  }, [timestamp, interval]);
 
-  if (!timestamp) {
-    return {
-      relativeTime: "—",
-      absoluteTime: "—",
-    };
-  }
+  return relative;
+}
 
-  const date = new Date(timestamp);
-  if (isNaN(date.getTime())) {
-    return {
-      relativeTime: "—",
-      absoluteTime: "—",
-    };
-  }
-
+function formatRelative(timestamp: string | number | Date): string {
   const now = Date.now();
-  const diffMs = now - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
+  const then = new Date(timestamp).getTime();
 
-  let relativeTime: string;
-
-  if (diffSec < 5) {
-    relativeTime = "baru saja";
-  } else if (diffSec < 60) {
-    relativeTime = `${diffSec} detik yang lalu`;
-  } else if (diffMin < 60) {
-    relativeTime = `${diffMin} menit yang lalu`;
-  } else if (diffHour < 24) {
-    relativeTime = `${diffHour} jam yang lalu`;
-  } else if (diffDay < 7) {
-    relativeTime = `${diffDay} hari yang lalu`;
-  } else if (diffDay < 30) {
-    const weeks = Math.floor(diffDay / 7);
-    relativeTime = `${weeks} minggu yang lalu`;
-  } else if (diffDay < 365) {
-    const months = Math.floor(diffDay / 30);
-    relativeTime = `${months} bulan yang lalu`;
-  } else {
-    const years = Math.floor(diffDay / 365);
-    relativeTime = `${years} tahun yang lalu`;
+  if (Number.isNaN(then)) {
+    return "—";
   }
 
-  const absoluteTime = date.toLocaleString("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const diff = Math.max(0, now - then);
+  const seconds = Math.floor(diff / 1000);
 
-  return {
-    relativeTime,
-    absoluteTime,
-  };
+  if (seconds < 5) return "baru saja";
+  if (seconds < 60) return `${seconds}d lalu`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m lalu`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}j lalu`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}h lalu`;
 }

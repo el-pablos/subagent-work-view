@@ -90,6 +90,7 @@ const AlertToast: React.FC<AlertToastProps> = ({
   const [isExiting, setIsExiting] = useState(false);
   const styles = getAlertStyles(type);
   const positionStyles = getPositionStyles(position);
+  const isError = type === "error";
 
   useEffect(() => {
     if (duration > 0) {
@@ -113,6 +114,9 @@ const AlertToast: React.FC<AlertToastProps> = ({
 
   return (
     <div
+      role={isError ? "alert" : "status"}
+      aria-live={isError ? "assertive" : "polite"}
+      aria-atomic="true"
       style={{
         position: "fixed",
         ...positionStyles,
@@ -178,6 +182,9 @@ const AlertToast: React.FC<AlertToastProps> = ({
         {/* Close button */}
         <button
           onClick={handleClose}
+          type="button"
+          aria-label="Tutup notifikasi"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           style={{
             flexShrink: 0,
             width: "20px",

@@ -1,8 +1,16 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { Agent } from "./types";
 import AgentStatusRing from "./AgentStatusRing";
 import TypingIndicator from "./TypingIndicator";
+import {
+  fadeInUp,
+  hoverScale,
+  pulseGlow,
+  scaleIn,
+  tapScale,
+} from "../../lib/animations";
+import { cn } from "../../lib/utils";
 
 interface AgentNodeProps {
   agent: Agent;
@@ -28,6 +36,16 @@ const getInitials = (name: string): string => {
     .join("");
 };
 
+const getAgentSource = (agent: Agent): "claude" | "openclaw" | "unknown" => {
+  const source = `${agent.source ?? ""} ${agent.uuid} ${agent.id} ${agent.name}`
+    .toLowerCase()
+    .trim();
+
+  if (source.includes("openclaw")) return "openclaw";
+  if (source.includes("claude")) return "claude";
+  return "unknown";
+};
+
 const AgentNode: React.FC<AgentNodeProps> = ({
   agent,
   isSelected = false,
@@ -35,112 +53,149 @@ const AgentNode: React.FC<AgentNodeProps> = ({
   size = 64,
   className = "",
 }) => {
+  const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
-  const avatarSize = size - 12; // Leave space for the ring
-
+  const buttonSize = Math.max(size, 44);
+  const avatarSize = buttonSize - 12;
   const isWorking = agent.status === "busy" || agent.status === "communicating";
+  const showPulseGlow = agent.status === "busy";
   const bgColor = roleColors[agent.role] || "bg-gray-600";
+  const source = getAgentSource(agent);
 
   return (
-    <motion.div
-      className={`relative cursor-pointer ${className}`}
-      style={{ width: size, height: size }}
+    <motion.button
+      type="button"
+      className={cn(
+        "relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-none bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+        className,
+      )}
+      style={{ width: buttonSize, height: buttonSize }}
       onClick={() => onClick?.(agent)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
+      initial={shouldReduceMotion ? false : "hidden"}
+      animate={shouldReduceMotion ? { opacity: 1, scale: 1 } : "show"}
+      variants={shouldReduceMotion ? undefined : scaleIn}
+      whileHover={shouldReduceMotion ? undefined : hoverScale}
+      whileTap={shouldReduceMotion ? undefined : tapScale}
+      aria-label={`${agent.name}, ${agent.role}, ${agent.status}`}
+      aria-pressed={isSelected}
     >
-      {/* Status ring */}
-      <AgentStatusRing status={agent.status} size={size} />
+      <motion.span
+        className="absolute inset-0 rounded-full"
+        aria-hidden="true"
+        variants={shouldReduceMotion ? undefined : pulseGlow}
+        initial={false}
+        animate={!shouldReduceMotion && showPulseGlow ? "active" : "idle"}
+      />
 
-      {/* Avatar container */}
+      <AgentStatusRing status={agent.status} size={buttonSize} />
+
       <div
-        className="absolute flex items-center justify-center rounded-full overflow-hidden"
+        className="absolute flex items-center justify-center overflow-hidden rounded-full"
         style={{
           width: avatarSize,
           height: avatarSize,
-          top: (size - avatarSize) / 2,
-          left: (size - avatarSize) / 2,
+          top: (buttonSize - avatarSize) / 2,
+          left: (buttonSize - avatarSize) / 2,
         }}
       >
         {agent.avatar ? (
           <img
             src={agent.avatar}
             alt={agent.name}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div
-            className={`w-full h-full flex items-center justify-center ${bgColor}`}
-          >
-            <span className="text-white font-semibold text-sm">
+          <div className={`flex h-full w-full items-center justify-center ${bgColor}`}>
+            <span className="text-sm font-semibold text-white">
               {getInitials(agent.name)}
             </span>
           </div>
         )}
       </div>
 
-      {/* Selection indicator */}
-      {isSelected && (
-        <motion.div
-          className="absolute inset-0 rounded-full border-2 border-white"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2 }}
-        />
-      )}
+      <span
+        className={cn(
+          "absolute right-1 top-1 h-2.5 w-2.5 rounded-full border border-slate-900",
+          source === "claude"
+            ? "bg-sky-500"
+            : source === "openclaw"
+              ? "bg-emerald-500"
+              : "bg-slate-500",
+        )}
+        aria-hidden="true"
+      />
+      <span className="sr-only">Source: {source}</span>
 
-      {/* Working indicator (typing dots) */}
-      {isWorking && (
-        <motion.div
-          className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-full px-2 py-1"
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <TypingIndicator />
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {isSelected && (
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-white"
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Tooltip on hover */}
-      {isHovered && (
-        <motion.div
-          className="absolute left-1/2 transform -translate-x-1/2 z-50 pointer-events-none"
-          style={{ bottom: size + 8 }}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          <div className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 shadow-lg min-w-[120px]">
-            <div className="text-sm font-medium text-gray-100 whitespace-nowrap">
-              {agent.name}
-            </div>
-            <div className="text-xs text-gray-400 capitalize">{agent.role}</div>
-            {agent.currentTask && (
-              <div className="mt-1 pt-1 border-t border-gray-700">
-                <div className="text-xs text-gray-500">Current task:</div>
-                <div className="text-xs text-gray-300 truncate max-w-[150px]">
-                  {agent.currentTask.title}
-                </div>
-                <div className="mt-1 bg-gray-700 rounded-full h-1 overflow-hidden">
-                  <div
-                    className="bg-emerald-500 h-full transition-all duration-300"
-                    style={{ width: `${agent.currentTask.progress}%` }}
-                  />
-                </div>
+      <AnimatePresence>
+        {isWorking && (
+          <motion.div
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-gray-800 px-2 py-1"
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -2 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.15 }}
+          >
+            <TypingIndicator />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            className="pointer-events-none absolute left-1/2 z-50 -translate-x-1/2"
+            style={{ bottom: buttonSize + 8 }}
+            initial={shouldReduceMotion ? { opacity: 1 } : "hidden"}
+            animate={shouldReduceMotion ? { opacity: 1, y: 0 } : "show"}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
+            variants={shouldReduceMotion ? undefined : fadeInUp}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.15 }}
+          >
+            <div className="relative min-w-[120px] rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 shadow-lg">
+              <div className="whitespace-nowrap text-fluid-sm font-medium tracking-tight text-gray-100">
+                {agent.name}
               </div>
-            )}
-            {/* Tooltip arrow */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-gray-900 border-r border-b border-gray-700 rotate-45" />
-          </div>
-        </motion.div>
-      )}
+              <div className="text-xs capitalize text-gray-400">{agent.role}</div>
+              {agent.currentTask && (
+                <div className="mt-1 border-t border-gray-700 pt-1">
+                  <div className="text-xs text-gray-500">Current task:</div>
+                  <div className="max-w-[150px] truncate text-xs text-gray-300">
+                    {agent.currentTask.title}
+                  </div>
+                  <div className="mt-1 h-1 overflow-hidden rounded-full bg-gray-700">
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{ width: `${agent.currentTask.progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-gray-700 bg-gray-900" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Agent name label below */}
-      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 whitespace-nowrap">
+      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-fluid-xs font-medium tracking-tight text-gray-400">
         {agent.name}
       </div>
-    </motion.div>
+    </motion.button>
   );
 };
 

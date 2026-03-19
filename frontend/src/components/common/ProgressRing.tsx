@@ -8,6 +8,7 @@ interface ProgressRingProps {
   backgroundColor?: string;
   showPercentage?: boolean;
   animated?: boolean;
+  decorative?: boolean;
 }
 
 const ProgressRing: React.FC<ProgressRingProps> = ({
@@ -18,6 +19,7 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
   backgroundColor = "#e5e7eb",
   showPercentage = true,
   animated = true,
+  decorative = false,
 }) => {
   // Ensure progress is between 0 and 100
   const normalizedProgress = Math.min(Math.max(progress, 0), 100);
@@ -32,6 +34,12 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
 
   return (
     <div
+      role={decorative ? undefined : "progressbar"}
+      aria-hidden={decorative ? "true" : undefined}
+      aria-label={decorative ? undefined : "Task progress"}
+      aria-valuenow={decorative ? undefined : Math.round(normalizedProgress)}
+      aria-valuemin={decorative ? undefined : 0}
+      aria-valuemax={decorative ? undefined : 100}
       style={{
         position: "relative",
         display: "inline-flex",

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Task, TaskStatus } from "../../types/task";
 import TaskProgressBar from "./TaskProgressBar";
+import { fadeInUp, hoverScale, tapScale } from "../../lib/animations";
 
 interface TaskCardProps {
   task: Task;
@@ -65,10 +67,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onClick,
   className = "",
 }) => {
+  const shouldReduceMotion = useReducedMotion();
   const statusBadge = getStatusBadge(task.status);
   const [elapsed, setElapsed] = useState(formatElapsedTime(task.startedAt));
 
-  // Update elapsed time every second for running tasks
   useEffect(() => {
     if (task.status !== "running" || !task.startedAt) return;
 
@@ -80,67 +82,82 @@ const TaskCard: React.FC<TaskCardProps> = ({
   }, [task.status, task.startedAt]);
 
   return (
-    <div
-      className={`bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors cursor-pointer ${className}`}
-      onClick={() => onClick?.(task)}
+    <motion.article
+      layout={!shouldReduceMotion}
+      variants={shouldReduceMotion ? undefined : fadeInUp}
+      initial={shouldReduceMotion ? false : "hidden"}
+      animate={shouldReduceMotion ? { opacity: 1, y: 0 } : "show"}
+      exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      whileHover={
+        shouldReduceMotion
+          ? undefined
+          : {
+              ...hoverScale,
+              y: -4,
+              boxShadow: "0 18px 40px rgba(15, 23, 42, 0.25)",
+            }
+      }
+      whileTap={shouldReduceMotion ? undefined : tapScale}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 260, damping: 24 }
+      }
+      className={`glow-border min-h-[48px] rounded-xl border border-slate-700/50 bg-slate-900/70 backdrop-blur-xl transition-colors hover:border-cyan-400/20 ${className}`}
     >
-      {/* Header: Title + Status Badge */}
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-100 truncate flex-1 mr-2">
-          {task.title}
-        </h3>
-        <span
-          className={`px-2 py-0.5 rounded text-xs font-medium ${statusBadge.bg} ${statusBadge.text}`}
-        >
-          {statusBadge.label}
-        </span>
-      </div>
-
-      {/* Description */}
-      {task.description && (
-        <p className="text-xs text-gray-400 mb-3 line-clamp-2">
-          {task.description}
-        </p>
-      )}
-
-      {/* Assigned Agent */}
-      {task.assignedAgent && (
-        <div className="flex items-center mb-3">
-          <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden mr-2">
-            {task.assignedAgent.avatar ? (
-              <img
-                src={task.assignedAgent.avatar}
-                alt={task.assignedAgent.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-xs font-medium text-gray-300">
-                {task.assignedAgent.name.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-          <span className="text-xs text-gray-400">
-            {task.assignedAgent.name}
+      <button
+        type="button"
+        onClick={() => onClick?.(task)}
+        aria-label={`${task.title}, ${statusBadge.label}, ${task.progress}% progress`}
+        className="min-h-[48px] w-full rounded-xl p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+      >
+        <div className="mb-2 flex items-start justify-between">
+          <h3 className="mr-2 flex-1 truncate text-sm font-medium text-white">
+            {task.title}
+          </h3>
+          <span
+            className={`rounded px-2 py-0.5 text-xs font-medium ${statusBadge.bg} ${statusBadge.text}`}
+          >
+            {statusBadge.label}
           </span>
         </div>
-      )}
 
-      {/* Progress Bar */}
-      <TaskProgressBar
-        progress={task.progress}
-        status={task.status}
-        showLabel={true}
-        className="mb-3"
-      />
+        {task.description && (
+          <p className="mb-3 line-clamp-2 text-xs text-slate-300">{task.description}</p>
+        )}
 
-      {/* Timestamps */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>
-          Started: {task.startedAt ? formatTimestamp(task.startedAt) : "-"}
-        </span>
-        <span className="text-gray-400 font-medium">{elapsed}</span>
-      </div>
-    </div>
+        {task.assignedAgent && (
+          <div className="mb-3 flex items-center">
+            <div className="mr-2 flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-slate-700">
+              {task.assignedAgent.avatar ? (
+                <img
+                  src={task.assignedAgent.avatar}
+                  alt={task.assignedAgent.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-xs font-medium text-slate-200">
+                  {task.assignedAgent.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-slate-300">{task.assignedAgent.name}</span>
+          </div>
+        )}
+
+        <TaskProgressBar
+          progress={task.progress}
+          status={task.status}
+          showLabel={true}
+          className="mb-3"
+        />
+
+        <div className="flex items-center justify-between text-xs text-slate-400">
+          <span>Started: {task.startedAt ? formatTimestamp(task.startedAt) : "-"}</span>
+          <span className="font-medium text-slate-300">{elapsed}</span>
+        </div>
+      </button>
+    </motion.article>
   );
 };
 

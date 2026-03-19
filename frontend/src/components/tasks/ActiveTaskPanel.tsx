@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { ListTodo } from "lucide-react";
 import type { Task } from "../../types/task";
 import TaskCard from "./TaskCard";
 
@@ -19,8 +20,28 @@ const ActiveTaskPanel: React.FC<ActiveTaskPanelProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
 
-  // Filter tasks based on active tab
-  const getFilteredTasks = (): Task[] => {
+  // Memoize counts to avoid recalculating on every render
+  const taskCounts = useMemo(() => {
+    const counts = {
+      running: 0,
+      pending: 0,
+      completed: 0,
+      failed: 0,
+      total: tasks.length,
+    };
+
+    tasks.forEach((task) => {
+      if (task.status === "running") counts.running++;
+      else if (task.status === "pending") counts.pending++;
+      else if (task.status === "completed") counts.completed++;
+      else if (task.status === "failed") counts.failed++;
+    });
+
+    return counts;
+  }, [tasks]);
+
+  // Memoize filtered tasks
+  const filteredTasks = useMemo((): Task[] => {
     switch (activeFilter) {
       case "running":
         return tasks.filter((task) => task.status === "running");
@@ -32,78 +53,105 @@ const ActiveTaskPanel: React.FC<ActiveTaskPanelProps> = ({
       default:
         return tasks;
     }
-  };
-
-  const filteredTasks = getFilteredTasks();
-  const runningCount = tasks.filter((t) => t.status === "running").length;
-  const pendingCount = tasks.filter((t) => t.status === "pending").length;
-  const completedCount = tasks.filter((t) => t.status === "completed").length;
-  const failedCount = tasks.filter((t) => t.status === "failed").length;
+  }, [tasks, activeFilter]);
 
   const filterTabs: { id: FilterTab; label: string; count: number }[] = [
-    { id: "all", label: "All", count: tasks.length },
-    { id: "running", label: "Running", count: runningCount },
-    { id: "pending", label: "Pending", count: pendingCount },
-    { id: "completed", label: "Completed", count: completedCount },
+    { id: "all", label: "All", count: taskCounts.total },
+    { id: "running", label: "Running", count: taskCounts.running },
+    { id: "pending", label: "Pending", count: taskCounts.pending },
+    { id: "completed", label: "Completed", count: taskCounts.completed },
   ];
 
   return (
-    <div
-      className={`bg-gray-900 rounded-lg border border-gray-800 ${className}`}
+    <section
+      aria-labelledby="tasks-heading"
+      className={`glass-panel noise-overlay rounded-lg ${className}`}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-800">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-100">Active Tasks</h2>
-          <div className="flex items-center space-x-3">
+      <div className="border-b border-slate-700/50 bg-slate-900/75 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-3">
+        <div className="mb-2 flex items-center justify-between sm:mb-3">
+          <div className="flex items-center gap-2">
+            <ListTodo
+              aria-hidden="true"
+              className="h-4 w-4 text-slate-300 sm:h-5 sm:w-5"
+            />
+            <h2
+              id="tasks-heading"
+              className="text-xs font-semibold text-white sm:text-sm"
+            >
+              Active Tasks
+            </h2>
+          </div>
+          <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Task count badges */}
-            <span className="flex items-center text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
-              <span className="text-gray-400">{runningCount} running</span>
+            <span className="flex items-center text-[10px] sm:text-xs">
+              <span className="mr-1 h-1.5 w-1.5 rounded-full bg-emerald-500 sm:h-2 sm:w-2" />
+              <span className="text-slate-300">
+                {taskCounts.running} <span className="hidden sm:inline">running</span>
+              </span>
             </span>
-            {completedCount > 0 && (
-              <span className="flex items-center text-xs">
-                <span className="w-2 h-2 rounded-full bg-sky-500 mr-1" />
-                <span className="text-gray-400">{completedCount} done</span>
+            {taskCounts.completed > 0 && (
+              <span className="flex items-center text-[10px] sm:text-xs">
+                <span className="mr-1 h-1.5 w-1.5 rounded-full bg-sky-500 sm:h-2 sm:w-2" />
+                <span className="text-slate-300">
+                  {taskCounts.completed} <span className="hidden sm:inline">done</span>
+                </span>
               </span>
             )}
-            {failedCount > 0 && (
-              <span className="flex items-center text-xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 mr-1" />
-                <span className="text-gray-400">{failedCount} failed</span>
+            {taskCounts.failed > 0 && (
+              <span className="flex items-center text-[10px] sm:text-xs">
+                <span className="mr-1 h-1.5 w-1.5 rounded-full bg-rose-500 sm:h-2 sm:w-2" />
+                <span className="text-slate-300">
+                  {taskCounts.failed} <span className="hidden sm:inline">failed</span>
+                </span>
               </span>
             )}
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center space-x-2">
+        <div
+          className="-mx-1 flex items-center space-x-1 overflow-x-auto px-1 pb-1 sm:space-x-2"
+          role="tablist"
+          aria-label="Task filters"
+        >
           {filterTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              id={`tasks-tab-${tab.id}`}
+              role="tab"
+              type="button"
+              aria-selected={activeFilter === tab.id}
+              aria-controls="tasks-panel"
+              className={`flex-shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${
                 activeFilter === tab.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
-              }`}
+                  ? "border border-cyan-400/20 bg-cyan-500/15 text-cyan-50"
+                  : "border border-slate-700/60 bg-slate-800/60 text-slate-400 hover:bg-slate-700/70 hover:text-slate-200"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900`}
             >
               {tab.label}
-              <span className="ml-1.5 opacity-75">({tab.count})</span>
+              <span className="ml-1 opacity-75 sm:ml-1.5">({tab.count})</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Scrollable task list */}
-      <div className="overflow-y-auto p-4 space-y-3" style={{ maxHeight }}>
+      <div
+        id="tasks-panel"
+        role="tabpanel"
+        aria-labelledby={`tasks-tab-${activeFilter}`}
+        className="space-y-2 overflow-y-auto bg-slate-950/30 p-2 sm:space-y-3 sm:p-4"
+        style={{ maxHeight }}
+      >
         {filteredTasks.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-gray-600 text-4xl mb-2">📋</div>
-            <p className="text-gray-500 text-sm">
+          <div className="py-6 text-center sm:py-8">
+            <div className="mb-2 text-3xl text-slate-500 sm:text-4xl">📋</div>
+            <p className="text-xs text-slate-300 sm:text-sm">
               {activeFilter === "all" ? "No tasks" : `No ${activeFilter} tasks`}
             </p>
-            <p className="text-gray-600 text-xs mt-1">
+            <p className="mt-1 text-[10px] text-slate-400 sm:text-xs">
               Tasks will appear here when they start
             </p>
           </div>
@@ -116,16 +164,16 @@ const ActiveTaskPanel: React.FC<ActiveTaskPanelProps> = ({
 
       {/* Footer with summary */}
       {tasks.length > 0 && (
-        <div className="px-4 py-2 border-t border-gray-800 bg-gray-900/50">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="border-t border-slate-700/50 bg-slate-900/60 px-4 py-2">
+          <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Total: {tasks.length} tasks</span>
             <span>
-              {Math.round((completedCount / tasks.length) * 100)}% complete
+              {Math.round((taskCounts.completed / tasks.length) * 100)}% complete
             </span>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

@@ -46,54 +46,80 @@ function formatTime(timestamp: string): string {
 
 /**
  * Message type color configurations
- * - agent: slate
- * - system: sky
- * - user: emerald
- * - broadcast: amber
  */
 interface MessageColors {
   bg: string;
   border: string;
   text: string;
-  accent: string;
+  accentText: string;
+  subtleText: string;
+  badgeBg: string;
+  badgeText: string;
+  channelBg: string;
+  channelText: string;
 }
 
 function getMessageColors(type: MessageType): MessageColors {
   switch (type) {
     case "agent":
       return {
-        bg: "#f8fafc", // slate-50
-        border: "#e2e8f0", // slate-200
-        text: "#334155", // slate-700
-        accent: "#64748b", // slate-500
+        bg: "bg-cyan-500/10",
+        border: "border-cyan-500/20",
+        text: "text-cyan-50",
+        accentText: "text-cyan-200",
+        subtleText: "text-cyan-300/80",
+        badgeBg: "bg-cyan-500/15",
+        badgeText: "text-cyan-200",
+        channelBg: "bg-cyan-500/10",
+        channelText: "text-cyan-100",
       };
     case "system":
       return {
-        bg: "#f0f9ff", // sky-50
-        border: "#bae6fd", // sky-200
-        text: "#0369a1", // sky-700
-        accent: "#0ea5e9", // sky-500
+        bg: "bg-purple-500/10",
+        border: "border-purple-500/20",
+        text: "text-purple-50",
+        accentText: "text-purple-200",
+        subtleText: "text-purple-300/80",
+        badgeBg: "bg-purple-500/15",
+        badgeText: "text-purple-200",
+        channelBg: "bg-purple-500/10",
+        channelText: "text-purple-100",
       };
     case "user":
       return {
-        bg: "#ecfdf5", // emerald-50
-        border: "#a7f3d0", // emerald-200
-        text: "#047857", // emerald-700
-        accent: "#10b981", // emerald-500
+        bg: "bg-emerald-500/10",
+        border: "border-emerald-500/20",
+        text: "text-emerald-50",
+        accentText: "text-emerald-200",
+        subtleText: "text-emerald-300/80",
+        badgeBg: "bg-emerald-500/15",
+        badgeText: "text-emerald-200",
+        channelBg: "bg-emerald-500/10",
+        channelText: "text-emerald-100",
       };
     case "broadcast":
       return {
-        bg: "#fffbeb", // amber-50
-        border: "#fcd34d", // amber-300
-        text: "#b45309", // amber-700
-        accent: "#f59e0b", // amber-500
+        bg: "bg-amber-500/10",
+        border: "border-amber-500/20",
+        text: "text-amber-50",
+        accentText: "text-amber-200",
+        subtleText: "text-amber-300/80",
+        badgeBg: "bg-amber-500/15",
+        badgeText: "text-amber-200",
+        channelBg: "bg-amber-500/10",
+        channelText: "text-amber-100",
       };
     default:
       return {
-        bg: "#f8fafc",
-        border: "#e2e8f0",
-        text: "#334155",
-        accent: "#64748b",
+        bg: "bg-slate-800/50",
+        border: "border-slate-700/50",
+        text: "text-slate-200",
+        accentText: "text-slate-300",
+        subtleText: "text-slate-400",
+        badgeBg: "bg-slate-700/50",
+        badgeText: "text-slate-200",
+        channelBg: "bg-slate-800/80",
+        channelText: "text-slate-300",
       };
   }
 }
@@ -109,50 +135,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   if (type === "system") {
     return (
       <div
-        className={className}
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          padding: "8px 12px",
-          marginBottom: "4px",
-          borderRadius: "8px",
-          backgroundColor: colors.bg,
-          border: `1px solid ${colors.border}`,
-        }}
+        className={`${className} mb-1 flex justify-center rounded-lg border px-3 py-2 ${colors.bg} ${colors.border}`}
       >
-        <div
-          style={{
-            textAlign: "center",
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-        >
+        <div className="flex w-full items-center justify-center gap-2 text-center">
           {/* System icon */}
           <svg
             width="14"
             height="14"
             viewBox="0 0 24 24"
             fill="none"
-            stroke={colors.accent}
+            className={colors.accentText}
+            stroke="currentColor"
             strokeWidth="2"
           >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
-          <span
-            style={{
-              color: colors.text,
-              fontSize: "13px",
-              fontStyle: "italic",
-            }}
-          >
-            {content}
-          </span>
-          <span style={{ fontSize: "11px", color: colors.accent }}>
+          <span className={`text-[13px] italic ${colors.text}`}>{content}</span>
+          <span className={`text-[11px] ${colors.subtleText}`}>
             {formatTime(timestamp)}
           </span>
         </div>
@@ -165,16 +166,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={className}
-      style={{
-        display: "flex",
-        padding: "10px 12px",
-        marginBottom: "6px",
-        borderRadius: "10px",
-        backgroundColor: colors.bg,
-        border: `1px solid ${colors.border}`,
-        fontSize: "14px",
-      }}
+      className={`${className} mb-1.5 flex rounded-xl border px-3 py-2.5 text-sm ${colors.bg} ${colors.border}`}
     >
       {/* Avatar */}
       <div
@@ -190,7 +182,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           fontWeight: 600,
           fontSize: "13px",
           flexShrink: 0,
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         {sender?.avatar ? (
@@ -210,33 +202,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
 
       {/* Message content */}
-      <div style={{ marginLeft: "12px", flex: 1, minWidth: 0 }}>
+      <div className="ml-3 min-w-0 flex-1">
         {/* Header: name, type badge, recipient, channel */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "6px",
-            marginBottom: "4px",
-          }}
-        >
-          <span style={{ fontWeight: 600, color: "#1e293b", fontSize: "14px" }}>
+        <div className="mb-1 flex flex-wrap items-center gap-1.5">
+          <span className="text-sm font-semibold text-white">
             {sender?.name || "Unknown"}
           </span>
 
           {/* Agent type badge */}
           {sender?.type && (
             <span
-              style={{
-                fontSize: "10px",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                backgroundColor: avatarColor + "20",
-                color: avatarColor,
-                textTransform: "capitalize",
-                fontWeight: 500,
-              }}
+              className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium capitalize ${colors.badgeBg} ${colors.badgeText}`}
             >
               {sender.type}
             </span>
@@ -244,15 +220,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* To agent indicator (if not broadcast) */}
           {recipient && type !== "broadcast" && (
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                fontSize: "12px",
-                color: "#64748b",
-              }}
-            >
+            <span className={`flex items-center gap-1 text-xs ${colors.subtleText}`}>
               <svg
                 width="12"
                 height="12"
@@ -263,7 +231,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               >
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-              <span style={{ fontWeight: 500, color: "#475569" }}>
+              <span className={`font-medium ${colors.accentText}`}>
                 {recipient.name}
               </span>
             </span>
@@ -271,19 +239,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Broadcast indicator */}
           {type === "broadcast" && (
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                fontSize: "10px",
-                padding: "2px 8px",
-                borderRadius: "4px",
-                backgroundColor: "#fef3c7",
-                color: "#d97706",
-                fontWeight: 600,
-              }}
-            >
+            <span className="flex items-center gap-1 rounded-md border border-amber-400/20 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-100">
               <svg
                 width="12"
                 height="12"
@@ -300,42 +256,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Channel badge */}
           <span
-            style={{
-              fontSize: "10px",
-              padding: "2px 6px",
-              borderRadius: "4px",
-              backgroundColor: "#e2e8f0",
-              color: "#64748b",
-              fontWeight: 500,
-            }}
+            className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium ${colors.channelBg} ${colors.channelText}`}
           >
             #{channel}
           </span>
         </div>
 
         {/* Content */}
-        <div
-          style={{
-            color: colors.text,
-            wordBreak: "break-word",
-            whiteSpace: "pre-wrap",
-            lineHeight: "1.5",
-          }}
-        >
+        <div className={`whitespace-pre-wrap break-words leading-6 ${colors.text}`}>
           {content}
         </div>
 
         {/* Timestamp */}
-        <div
-          style={{
-            fontSize: "11px",
-            color: "#94a3b8",
-            marginTop: "6px",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
+        <div className={`mt-1.5 flex items-center gap-1 text-[11px] ${colors.subtleText}`}>
           <svg
             width="12"
             height="12"

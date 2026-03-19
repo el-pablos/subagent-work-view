@@ -1,4 +1,6 @@
 import React from "react";
+import { Activity, Cpu } from "lucide-react";
+import { NotificationBell } from "../common";
 
 export type ConnectionStatus = "connected" | "connecting" | "disconnected";
 
@@ -46,15 +48,16 @@ const Header: React.FC<HeaderProps> = ({
   const statusConfig = getConnectionStatusConfig(connectionStatus);
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 px-4 py-3">
-      <div className="flex items-center justify-between">
+    <header className="bg-slate-900 border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-3">
+      <div className="flex items-center justify-between gap-2">
         {/* Logo and Title */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-shrink">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
             {/* Logo Icon */}
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
               <svg
-                className="w-5 h-5 text-white"
+                aria-hidden="true"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -67,32 +70,34 @@ const Header: React.FC<HeaderProps> = ({
                 />
               </svg>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-fluid-base sm:text-fluid-xl font-semibold text-white tracking-tight truncate">
                 SubAgent Work View
               </h1>
-              <p className="text-xs text-slate-500 -mt-0.5">
+              <p className="text-fluid-xs sm:text-fluid-sm text-slate-400 -mt-0.5 hidden sm:block">
                 Real-time Multi-Agent Dashboard
               </p>
             </div>
           </div>
         </div>
 
-        {/* Center: Session Indicator */}
-        <div className="flex items-center space-x-3">
+        {/* Center: Session Indicator - Hidden on mobile */}
+        <div className="hidden lg:flex items-center space-x-3">
           {sessionId && (
             <div className="flex items-center space-x-2 bg-slate-800/50 rounded-lg px-3 py-1.5">
-              <span className="text-xs text-slate-400">Session:</span>
-              <code className="text-xs font-mono text-cyan-400">
+              <span className="text-fluid-xs text-slate-400">Session:</span>
+              <code className="text-fluid-xs font-mono tabular-nums text-cyan-400">
                 {sessionId.slice(0, 8)}...
               </code>
               {onSessionChange && (
                 <button
                   onClick={() => onSessionChange("")}
-                  className="text-slate-500 hover:text-slate-300 transition-colors"
+                  className="rounded text-slate-400 transition-colors hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                   title="Change session"
+                  aria-label="Change session"
                 >
                   <svg
+                    aria-hidden="true"
                     className="w-3.5 h-3.5"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -112,32 +117,41 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right: Status and Stats */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          {/* Notification Bell */}
+          <NotificationBell />
+
           {/* Quick Stats */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1.5 sm:space-x-3">
             {/* Active Agents */}
-            <div className="flex items-center space-x-1.5 bg-slate-800/50 rounded-lg px-3 py-1.5">
-              <div className="w-2 h-2 rounded-full bg-purple-500" />
-              <span className="text-xs text-slate-400">Agents:</span>
-              <span className="text-sm font-semibold text-white">
-                {activeAgentCount}
-              </span>
+            <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-800/50 rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <Cpu
+                aria-hidden="true"
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500"
+              />
+               <span className="text-[10px] sm:text-fluid-xs text-slate-400 hidden sm:inline">Agents:</span>
+               <span className="tabular-nums text-fluid-sm sm:text-fluid-base font-semibold text-white">
+                 {activeAgentCount}
+               </span>
             </div>
 
             {/* Running Tasks */}
-            <div className="flex items-center space-x-1.5 bg-slate-800/50 rounded-lg px-3 py-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-xs text-slate-400">Tasks:</span>
-              <span className="text-sm font-semibold text-white">
-                {runningTaskCount}
-              </span>
+            <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-800/50 rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <Activity
+                aria-hidden="true"
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500"
+              />
+               <span className="text-[10px] sm:text-fluid-xs text-slate-400 hidden sm:inline">Tasks:</span>
+               <span className="tabular-nums text-fluid-sm sm:text-fluid-base font-semibold text-white">
+                 {runningTaskCount}
+               </span>
             </div>
           </div>
 
           {/* Connection Status */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
             <div className="relative">
-              <div className={`w-2.5 h-2.5 rounded-full ${statusConfig.color}`}>
+              <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${statusConfig.color}`}>
                 {connectionStatus === "connected" && (
                   <div
                     className={`absolute inset-0 rounded-full ${statusConfig.pulseColor} animate-ping opacity-75`}
@@ -145,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
             </div>
-            <span className={`text-xs font-medium ${statusConfig.textColor}`}>
+            <span className={`text-[10px] sm:text-fluid-xs font-medium ${statusConfig.textColor} hidden sm:inline`}>
               {statusConfig.text}
             </span>
           </div>
