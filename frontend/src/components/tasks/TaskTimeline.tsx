@@ -172,20 +172,20 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
     onTaskUpdated: useCallback(
       (event: TaskUpdatedEvent) => {
         // Filter updates for this specific task if taskId is provided
-        if (taskId && event.task.id !== taskId) return;
+        if (taskId && String(event.task.id) !== taskId) return;
 
         // Create new timeline event from task update
         const newEvent: TaskHistoryEvent = {
           id: `event-${Date.now()}`,
-          taskId: event.task.id,
+          taskId: String(event.task.id),
           type: "progress",
           timestamp: new Date().toISOString(),
           data: {
             progress: event.task.progress,
-            status: event.task.status,
+            status: event.task.status as any,
             agent: event.task.assignedAgent
               ? {
-                  id: event.task.assignedAgent.id,
+                  id: String(event.task.assignedAgent.id),
                   name: event.task.assignedAgent.name,
                 }
               : undefined,
