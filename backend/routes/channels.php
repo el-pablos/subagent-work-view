@@ -13,20 +13,20 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Session channel - public for now
-// Clients subscribe to receive real-time updates for a specific session
-Broadcast::channel('session.{sessionId}', function () {
-    return true;
+// Public channels (no auth needed for dashboard monitoring)
+Broadcast::channel('dashboard', function () {
+    return true; // Public channel
 });
 
-// Dashboard global channel - public
-// Used for global notifications and dashboard-wide updates
+// Backward-compatible alias for existing broadcastOn() usage.
 Broadcast::channel('dashboard.global', function () {
-    return true;
+    return true; // Public channel
 });
 
-// Agent channel - public for now
-// Clients subscribe to receive real-time updates for a specific agent
-Broadcast::channel('agent.{agentId}', function () {
-    return true;
+Broadcast::channel('session.{sessionId}', function ($user, $sessionId) {
+    return true; // Public for now
+});
+
+Broadcast::channel('agent.{agentId}', function ($user, $agentId) {
+    return true; // Public for now
 });
