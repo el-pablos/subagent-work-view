@@ -111,6 +111,18 @@ export default {
         "3xl": "1920px",
         "4xl": "2560px",
       },
+      gridTemplateColumns: {
+        14: "repeat(14, minmax(0, 1fr))",
+        16: "repeat(16, minmax(0, 1fr))",
+        20: "repeat(20, minmax(0, 1fr))",
+        24: "repeat(24, minmax(0, 1fr))",
+      },
+      gridColumn: {
+        "span-13": "span 13 / span 13",
+        "span-14": "span 14 / span 14",
+        "span-15": "span 15 / span 15",
+        "span-16": "span 16 / span 16",
+      },
       colors: {
         // War Room Theme Colors
         slate: {

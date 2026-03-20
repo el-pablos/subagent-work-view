@@ -16,7 +16,8 @@ export interface Agent {
   role: AgentRole;
   status: AgentStatus;
   avatar?: string;
-  source?: 'claude' | 'openclaw' | 'copilot-cli' | 'unknown';
+  source?: "claude" | "openclaw" | "copilot-cli" | "unknown";
+  lastSeenAt?: Date | string; // Timestamp of last activity
   currentTask?: {
     id: string;
     title: string;

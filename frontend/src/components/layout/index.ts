@@ -6,4 +6,4 @@ export { default as HeaderCommandBar } from "./HeaderCommandBar";
 // Types
 export type { WarRoomLayoutProps } from "./WarRoomLayout";
 export type { HeaderProps, ConnectionStatus } from "./Header";
-export type { HeaderCommandBarProps, QuickAction } from "./HeaderCommandBar";
+export type { HeaderCommandBarProps } from "./HeaderCommandBar";

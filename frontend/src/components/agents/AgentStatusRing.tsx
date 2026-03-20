@@ -9,6 +9,11 @@ interface AgentStatusRingProps {
   className?: string;
 }
 
+// Colorblind-safe palette with high contrast and distinct hues
+// Idle: Cool gray-blue (neutral, low energy)
+// Busy: Warm orange (active, high energy)
+// Communicating: Purple-blue (distinct from busy)
+// Error: Red-pink (danger, critical)
 const statusColors: Record<
   AgentStatus,
   {
@@ -17,35 +22,40 @@ const statusColors: Record<
     accent: string;
     glow: string;
     track: string;
+    pulseIntensity: number;
   }
 > = {
   idle: {
-    from: "#64748b",
-    to: "#94a3b8",
-    accent: "#94a3b8",
-    glow: "drop-shadow-[0_0_10px_rgba(100,116,139,0.22)]",
-    track: "#1f2937",
+    from: "#64748b", // Slate-500
+    to: "#94a3b8", // Slate-400
+    accent: "#cbd5e1", // Slate-300
+    glow: "drop-shadow-[0_0_8px_rgba(100,116,139,0.18)]",
+    track: "#1e293b",
+    pulseIntensity: 0.5, // Subtle pulse for idle
   },
   busy: {
-    from: "#06b6d4",
-    to: "#2dd4bf",
-    accent: "#67e8f9",
-    glow: "drop-shadow-[0_0_14px_rgba(34,211,238,0.42)]",
+    from: "#f97316", // Orange-500 - distinct from cyan/blue for colorblind users
+    to: "#fb923c", // Orange-400
+    accent: "#fdba74", // Orange-300
+    glow: "drop-shadow-[0_0_16px_rgba(249,115,22,0.48)]",
     track: "#0f172a",
+    pulseIntensity: 1.0, // Full pulse for busy
   },
   communicating: {
-    from: "#8b5cf6",
-    to: "#d946ef",
-    accent: "#c084fc",
-    glow: "drop-shadow-[0_0_14px_rgba(192,132,252,0.42)]",
+    from: "#8b5cf6", // Violet-500
+    to: "#a78bfa", // Violet-400
+    accent: "#c4b5fd", // Violet-300
+    glow: "drop-shadow-[0_0_16px_rgba(139,92,246,0.48)]",
     track: "#111827",
+    pulseIntensity: 0.85, // Strong pulse for communicating
   },
   error: {
-    from: "#f43f5e",
-    to: "#fb7185",
-    accent: "#fda4af",
-    glow: "drop-shadow-[0_0_12px_rgba(244,63,94,0.35)]",
+    from: "#dc2626", // Red-600 - deeper red for better visibility
+    to: "#ef4444", // Red-500
+    accent: "#f87171", // Red-400
+    glow: "drop-shadow-[0_0_18px_rgba(220,38,38,0.55)]",
     track: "#111827",
+    pulseIntensity: 0.9, // Urgent pulse for error
   },
 };
 
@@ -56,13 +66,16 @@ const AgentStatusRing: React.FC<AgentStatusRingProps> = ({
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const gradientId = useId().replace(/:/g, "");
-  const { from, to, accent, glow, track } = statusColors[status];
+  const { from, to, accent, glow, track, pulseIntensity } =
+    statusColors[status];
   const strokeWidth = 3;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
   const isBusy = status === "busy";
   const isCommunicating = status === "communicating";
+  const isError = status === "error";
+  const isActive = isBusy || isCommunicating || isError;
   const strokeDasharray =
     status === "idle"
       ? `${circumference}`
@@ -73,15 +86,21 @@ const AgentStatusRing: React.FC<AgentStatusRingProps> = ({
     : isBusy
       ? {
           rotate: 360,
+          opacity: [0.95, 1, 0.95],
         }
       : isCommunicating
         ? {
             scale: [1, 1.03, 1],
             opacity: [0.92, 1, 0.92],
           }
-        : {
-            opacity: [0.85, 1, 0.85],
-          };
+        : isError
+          ? {
+              opacity: [0.85, 1, 0.85],
+              scale: [1, 1.02, 1],
+            }
+          : {
+              opacity: [0.7, 0.85, 0.7],
+            };
 
   const ringTransition = shouldReduceMotion
     ? {}
@@ -97,11 +116,17 @@ const AgentStatusRing: React.FC<AgentStatusRingProps> = ({
             repeat: Infinity,
             ease: "easeInOut" as const,
           }
-        : {
-            duration: 2.6,
-            repeat: Infinity,
-            ease: "easeInOut" as const,
-          };
+        : isError
+          ? {
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut" as const,
+            }
+          : {
+              duration: 3.0,
+              repeat: Infinity,
+              ease: "easeInOut" as const,
+            };
 
   return (
     <svg
@@ -148,6 +173,29 @@ const AgentStatusRing: React.FC<AgentStatusRingProps> = ({
         transition={ringTransition}
         style={{ transformOrigin: "50% 50%" }}
       />
+
+      {/* Pulse ring for active states */}
+      {isActive && !shouldReduceMotion && (
+        <motion.circle
+          cx={center}
+          cy={center}
+          r={radius + 2}
+          fill="none"
+          stroke={accent}
+          strokeWidth={1.5}
+          initial={false}
+          animate={{
+            opacity: [0.6 * pulseIntensity, 0, 0.6 * pulseIntensity],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: isBusy ? 1.5 : isError ? 1.2 : 1.8,
+            repeat: Infinity,
+            ease: "easeOut",
+          }}
+          style={{ transformOrigin: "50% 50%" }}
+        />
+      )}
 
       {isCommunicating && !shouldReduceMotion && (
         <motion.circle

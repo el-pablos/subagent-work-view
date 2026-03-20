@@ -17,6 +17,8 @@ interface TaskActions {
   getTasksBySession: (sessionId: number) => Task[];
   getTasksByAgent: (agentId: number) => Task[];
   clearTasks: () => void;
+  clearOldTasks: (maxAgeMinutes?: number) => number;
+  clearTasksForSession: (sessionId: number) => void;
 }
 
 const initialState: TaskState = {
@@ -86,6 +88,46 @@ export const useTaskStore = create<TaskState & TaskActions>()(
     clearTasks: () =>
       set((state) => {
         state.tasks = {};
+      }),
+
+    clearOldTasks: (maxAgeMinutes = 15) => {
+      const now = Date.now();
+      const maxAgeMs = maxAgeMinutes * 60 * 1000;
+      let removedCount = 0;
+
+      set((state) => {
+        const idsToRemove: number[] = [];
+        for (const task of Object.values(state.tasks)) {
+          if (task.status === "completed" || task.status === "failed") {
+            const updatedAt = task.updated_at
+              ? new Date(task.updated_at).getTime()
+              : 0;
+            if (now - updatedAt > maxAgeMs) {
+              idsToRemove.push(task.id);
+            }
+          }
+        }
+        for (const id of idsToRemove) {
+          delete state.tasks[id];
+        }
+        removedCount = idsToRemove.length;
+      });
+
+      return removedCount;
+    },
+
+    // Clear all tasks for a specific session when it ends
+    clearTasksForSession: (sessionId) =>
+      set((state) => {
+        const idsToRemove: number[] = [];
+        for (const task of Object.values(state.tasks)) {
+          if (task.session_id === sessionId) {
+            idsToRemove.push(task.id);
+          }
+        }
+        for (const id of idsToRemove) {
+          delete state.tasks[id];
+        }
       }),
   })),
 );

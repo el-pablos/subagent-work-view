@@ -166,13 +166,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
-      className={`${className} mb-2 flex rounded-xl border px-3.5 py-3 text-sm glass-bubble sm:px-3 sm:py-2.5 ${colors.bg} ${colors.border}`}
+      className={`${className} mb-1 flex rounded-lg border px-2 py-1.5 text-[11px] glass-bubble ${colors.bg} ${colors.border}`}
     >
       {/* Avatar */}
       <div
         style={{
-          width: "42px",
-          height: "42px",
+          width: "28px",
+          height: "28px",
           borderRadius: "50%",
           backgroundColor: avatarColor,
           display: "flex",
@@ -180,9 +180,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           justifyContent: "center",
           color: "white",
           fontWeight: 600,
-          fontSize: "13px",
+          fontSize: "11px",
           flexShrink: 0,
-          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.35)",
         }}
       >
         {sender?.avatar ? (
@@ -202,17 +201,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
 
       {/* Message content */}
-      <div className="ml-3.5 min-w-0 flex-1">
+      <div className="ml-2 min-w-0 flex-1">
         {/* Header: name, type badge, recipient, channel */}
-        <div className="mb-1 flex flex-wrap items-center gap-1.5">
-          <span className="text-sm font-semibold text-white">
+        <div className="mb-0.5 flex flex-wrap items-center gap-1">
+          <span className="text-[11px] font-semibold text-white">
             {sender?.name || "Unknown"}
           </span>
 
           {/* Agent type badge */}
           {sender?.type && (
             <span
-              className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium capitalize ${colors.badgeBg} ${colors.badgeText}`}
+              className={`rounded px-1 py-px text-[9px] font-medium capitalize ${colors.badgeBg} ${colors.badgeText}`}
             >
               {sender.type}
             </span>
@@ -220,10 +219,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* To agent indicator (if not broadcast) */}
           {recipient && type !== "broadcast" && (
-            <span className={`flex items-center gap-1 text-xs ${colors.subtleText}`}>
+            <span
+              className={`flex items-center gap-0.5 text-[10px] ${colors.subtleText}`}
+            >
               <svg
-                width="12"
-                height="12"
+                width="10"
+                height="10"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -239,10 +240,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Broadcast indicator */}
           {type === "broadcast" && (
-            <span className="flex items-center gap-1 rounded-md border border-amber-400/20 bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-100">
+            <span className="flex items-center gap-0.5 rounded px-1 py-px text-[9px] font-semibold text-amber-100 bg-amber-500/15">
               <svg
-                width="12"
-                height="12"
+                width="10"
+                height="10"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -256,30 +257,21 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Channel badge */}
           <span
-            className={`rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] font-medium ${colors.channelBg} ${colors.channelText}`}
+            className={`rounded px-1 py-px text-[9px] font-medium ${colors.channelBg} ${colors.channelText}`}
           >
             #{channel}
           </span>
         </div>
 
         {/* Content */}
-        <div className={`whitespace-pre-wrap break-words leading-6 ${colors.text}`}>
+        <div
+          className={`whitespace-pre-wrap break-words leading-relaxed ${colors.text}`}
+        >
           {content}
         </div>
 
         {/* Timestamp */}
-        <div className={`mt-2 flex items-center gap-1 text-[11px] ${colors.subtleText}`}>
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+        <div className={`mt-1 text-[10px] ${colors.subtleText}`}>
           {formatTime(timestamp)}
         </div>
       </div>

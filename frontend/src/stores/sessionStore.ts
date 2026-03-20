@@ -17,6 +17,7 @@ interface SessionActions {
   getActiveSession: () => Session | undefined;
   getSessionsByStatus: (status: SessionStatus) => Session[];
   clearSessions: () => void;
+  clearEndedSessions: () => void;
 }
 
 const initialState: SessionState = {
@@ -80,6 +81,21 @@ export const useSessionStore = create<SessionState & SessionActions>()(
       set((state) => {
         state.sessions = {};
         state.activeSessionId = null;
+      }),
+
+    clearEndedSessions: () =>
+      set((state) => {
+        const endedStatuses: SessionStatus[] = [
+          "completed",
+          "failed",
+          "cancelled",
+        ];
+        for (const id of Object.keys(state.sessions)) {
+          const numId = Number(id);
+          if (endedStatuses.includes(state.sessions[numId].status)) {
+            delete state.sessions[numId];
+          }
+        }
       }),
   })),
 );

@@ -98,6 +98,14 @@ export function getConnectionState(): ConnectionState {
   return connectionState;
 }
 
+export function getReconnectAttempts(): number {
+  return reconnectAttempts;
+}
+
+export function getMaxReconnectAttempts(): number {
+  return MAX_RECONNECT_ATTEMPTS;
+}
+
 export function onConnectionStateChange(
   callback: (state: ConnectionState) => void,
 ): () => void {

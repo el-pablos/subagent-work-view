@@ -15,6 +15,8 @@ interface AgentActions {
   getAgentsByStatus: (status: AgentStatus) => Agent[];
   getAgent: (id: number) => Agent | undefined;
   clearAgents: () => void;
+  clearStaleAgents: () => void;
+  clearAgentsForSession: () => void;
 }
 
 const initialState: AgentState = {
@@ -64,6 +66,35 @@ export const useAgentStore = create<AgentState & AgentActions>()(
     },
 
     clearAgents: () =>
+      set((state) => {
+        state.agents = {};
+        state.selectedAgentId = null;
+      }),
+
+    clearStaleAgents: () =>
+      set((state) => {
+        const now = Date.now();
+        const staleThreshold = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+        Object.keys(state.agents).forEach((key) => {
+          const agentId = Number(key);
+          const agent = state.agents[agentId];
+          if (agent?.last_seen_at) {
+            const lastSeen = new Date(agent.last_seen_at).getTime();
+            if (now - lastSeen > staleThreshold) {
+              delete state.agents[agentId];
+              // Clear selection if the selected agent was removed
+              if (state.selectedAgentId === agentId) {
+                state.selectedAgentId = null;
+              }
+            }
+          }
+        });
+      }),
+
+    // Clear all agents when a session ends (completed/failed/cancelled)
+    // Since agents don't have session_id in their type, we clear all agents
+    clearAgentsForSession: () =>
       set((state) => {
         state.agents = {};
         state.selectedAgentId = null;

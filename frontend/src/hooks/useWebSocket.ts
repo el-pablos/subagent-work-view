@@ -2,10 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   echo,
   getConnectionState,
+  getReconnectAttempts,
+  getMaxReconnectAttempts,
   onConnectionStateChange,
   type ConnectionState,
 } from "../services/websocket";
-import { useAgentStore, useMessageStore, useSessionStore, useTaskStore } from "../stores";
+import {
+  useAgentStore,
+  useMessageStore,
+  useSessionStore,
+  useTaskStore,
+} from "../stores";
 import type { Agent, Message, Session, Task } from "../types";
 
 type ChannelInstance = ReturnType<typeof echo.channel>;
@@ -93,7 +100,10 @@ function extractPayload<T extends EntityRecord>(
   return payload as T;
 }
 
-function subscribe(channelName: string, register: (channel: ChannelInstance) => void) {
+function subscribe(
+  channelName: string,
+  register: (channel: ChannelInstance) => void,
+) {
   const channel = echo.channel(channelName);
   register(channel);
 
@@ -129,15 +139,13 @@ function mergeTaskPayload(payload: TaskSocketPayload): Task {
   const assignedAgentFromPayload =
     (isEntityRecord(payload) && isEntityRecord(payload.assigned_agent)
       ? payload.assigned_agent
-      : undefined) ??
-    payload.assignedAgent;
+      : undefined) ?? payload.assignedAgent;
   const assignedAgentId =
     payload.assigned_agent_id ??
     (isEntityRecord(assignedAgentFromPayload) &&
     typeof assignedAgentFromPayload.id === "number"
       ? assignedAgentFromPayload.id
-      : existing?.assigned_agent_id ??
-        null);
+      : (existing?.assigned_agent_id ?? null));
   const fallbackTimestamp = existing?.updated_at ?? new Date().toISOString();
 
   return {
@@ -163,7 +171,9 @@ function mergeTaskPayload(payload: TaskSocketPayload): Task {
       (isEntityRecord(assignedAgentFromPayload)
         ? mergeAgentPayload(assignedAgentFromPayload as AgentSocketPayload)
         : undefined) ??
-      (existing?.assignedAgent ? mergeAgentPayload(existing.assignedAgent) : undefined),
+      (existing?.assignedAgent
+        ? mergeAgentPayload(existing.assignedAgent)
+        : undefined),
   };
 }
 
@@ -175,7 +185,8 @@ function mergeSessionPayload(payload: SessionSocketPayload): Session {
     id: payload.id,
     uuid: payload.uuid ?? existing?.uuid ?? "",
     command_source: payload.command_source ?? existing?.command_source ?? "",
-    original_command: payload.original_command ?? existing?.original_command ?? "",
+    original_command:
+      payload.original_command ?? existing?.original_command ?? "",
     status: payload.status ?? existing?.status ?? "queued",
     context: payload.context ?? existing?.context,
     created_by: payload.created_by ?? existing?.created_by ?? null,
@@ -192,13 +203,11 @@ function mergeMessagePayload(payload: MessageSocketPayload): Message {
   const fromAgent =
     (isEntityRecord(payload) && isEntityRecord(payload.from_agent)
       ? payload.from_agent
-      : undefined) ??
-    payload.fromAgent;
+      : undefined) ?? payload.fromAgent;
   const toAgent =
     (isEntityRecord(payload) && isEntityRecord(payload.to_agent)
       ? payload.to_agent
-      : undefined) ??
-    payload.toAgent;
+      : undefined) ?? payload.toAgent;
   const fallbackTimestamp = payload.timestamp ?? new Date().toISOString();
 
   return {
@@ -211,7 +220,9 @@ function mergeMessagePayload(payload: MessageSocketPayload): Message {
         : null),
     to_agent_id:
       payload.to_agent_id ??
-      (isEntityRecord(toAgent) && typeof toAgent.id === "number" ? toAgent.id : null),
+      (isEntityRecord(toAgent) && typeof toAgent.id === "number"
+        ? toAgent.id
+        : null),
     content: payload.content ?? "",
     message_type: payload.message_type ?? "system",
     channel: payload.channel ?? "general",
@@ -227,16 +238,30 @@ function mergeMessagePayload(payload: MessageSocketPayload): Message {
   };
 }
 
-export function useWebSocketConnection() {
+export interface WebSocketConnectionInfo {
+  state: ConnectionState;
+  reconnectAttempt: number;
+  maxReconnectAttempts: number;
+}
+
+export function useWebSocketConnection(): WebSocketConnectionInfo {
   const [connectionState, setConnectionState] =
     useState<ConnectionState>(getConnectionState);
+  const [reconnectAttempt, setReconnectAttempt] = useState<number>(0);
 
   useEffect(() => {
-    const unsubscribe = onConnectionStateChange(setConnectionState);
+    const unsubscribe = onConnectionStateChange((state) => {
+      setConnectionState(state);
+      setReconnectAttempt(getReconnectAttempts());
+    });
     return unsubscribe;
   }, []);
 
-  return connectionState;
+  return {
+    state: connectionState,
+    reconnectAttempt,
+    maxReconnectAttempts: getMaxReconnectAttempts(),
+  };
 }
 
 export interface UseDashboardWebSocketOptions {
@@ -258,21 +283,33 @@ export function useDashboardWebSocket(options: UseDashboardWebSocketOptions) {
     const unsubscribers = DASHBOARD_CHANNELS.map((channelName) =>
       subscribe(channelName, (channel) => {
         channel.listen(`.${WS_EVENTS.SESSION_CREATED}`, (payload: unknown) => {
-          const session = extractPayload<SessionSocketPayload>(payload, "session");
+          const session = extractPayload<SessionSocketPayload>(
+            payload,
+            "session",
+          );
           if (session) {
             optionsRef.current.onSessionCreated?.({ session });
           }
         });
 
-        channel.listen(`.${WS_EVENTS.SESSION_COMPLETED}`, (payload: unknown) => {
-          const session = extractPayload<SessionSocketPayload>(payload, "session");
-          if (session) {
-            optionsRef.current.onSessionCompleted?.({ session });
-          }
-        });
+        channel.listen(
+          `.${WS_EVENTS.SESSION_COMPLETED}`,
+          (payload: unknown) => {
+            const session = extractPayload<SessionSocketPayload>(
+              payload,
+              "session",
+            );
+            if (session) {
+              optionsRef.current.onSessionCompleted?.({ session });
+            }
+          },
+        );
 
         channel.listen(`.${WS_EVENTS.SESSION_UPDATED}`, (payload: unknown) => {
-          const session = extractPayload<SessionSocketPayload>(payload, "session");
+          const session = extractPayload<SessionSocketPayload>(
+            payload,
+            "session",
+          );
           if (session) {
             optionsRef.current.onSessionUpdated?.({ session });
           }
@@ -285,12 +322,15 @@ export function useDashboardWebSocket(options: UseDashboardWebSocketOptions) {
           }
         });
 
-        channel.listen(`.${WS_EVENTS.AGENT_STATUS_CHANGED}`, (payload: unknown) => {
-          const agent = extractPayload<AgentSocketPayload>(payload, "agent");
-          if (agent) {
-            optionsRef.current.onAgentStatusChanged?.({ agent });
-          }
-        });
+        channel.listen(
+          `.${WS_EVENTS.AGENT_STATUS_CHANGED}`,
+          (payload: unknown) => {
+            const agent = extractPayload<AgentSocketPayload>(payload, "agent");
+            if (agent) {
+              optionsRef.current.onAgentStatusChanged?.({ agent });
+            }
+          },
+        );
 
         channel.listen(`.${WS_EVENTS.TASK_CREATED}`, (payload: unknown) => {
           const task = extractPayload<TaskSocketPayload>(payload, "task");
@@ -362,7 +402,10 @@ export function useSessionWebSocket(options: UseSessionWebSocketOptions) {
       });
 
       channel.listen(`.${WS_EVENTS.MESSAGE_CREATED}`, (payload: unknown) => {
-        const message = extractPayload<MessageSocketPayload>(payload, "message");
+        const message = extractPayload<MessageSocketPayload>(
+          payload,
+          "message",
+        );
         if (message) {
           optionsRef.current.onMessageCreated?.({ message });
         }
@@ -382,7 +425,9 @@ export function useAgentWebSocket(options: UseAgentWebSocketOptions) {
   const agentIds = useMemo(
     () =>
       Array.from(
-        new Set((options.agents ?? []).map((agent) => agent.id).filter(Boolean)),
+        new Set(
+          (options.agents ?? []).map((agent) => agent.id).filter(Boolean),
+        ),
       ),
     [options.agents],
   );
@@ -396,12 +441,15 @@ export function useAgentWebSocket(options: UseAgentWebSocketOptions) {
 
     const unsubscribers = agentIds.map((agentId) =>
       subscribe(agentChannel(agentId), (channel) => {
-        channel.listen(`.${WS_EVENTS.AGENT_STATUS_CHANGED}`, (payload: unknown) => {
-          const agent = extractPayload<AgentSocketPayload>(payload, "agent");
-          if (agent) {
-            optionsRef.current.onAgentStatusChanged?.({ agent });
-          }
-        });
+        channel.listen(
+          `.${WS_EVENTS.AGENT_STATUS_CHANGED}`,
+          (payload: unknown) => {
+            const agent = extractPayload<AgentSocketPayload>(payload, "agent");
+            if (agent) {
+              optionsRef.current.onAgentStatusChanged?.({ agent });
+            }
+          },
+        );
       }),
     );
 
@@ -430,7 +478,10 @@ export function useWebSocketWithStore(options: UseWebSocketWithStoreOptions) {
   const storeAddSession = useSessionStore((state) => state.addSession);
   const storeUpdateSession = useSessionStore((state) => state.updateSession);
   const storeAddMessage = useMessageStore((state) => state.addMessage);
-  const storeAgents = useMemo(() => Object.values(storeAgentRecords), [storeAgentRecords]);
+  const storeAgents = useMemo(
+    () => Object.values(storeAgentRecords),
+    [storeAgentRecords],
+  );
 
   const updateAgent = options.updateAgent ?? storeUpdateAgent;
   const addTask = options.addTask ?? storeAddTask;

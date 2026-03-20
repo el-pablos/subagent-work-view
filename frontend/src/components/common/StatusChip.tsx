@@ -28,54 +28,56 @@ interface StatusStyleConfig {
   isActive?: boolean;
 }
 
+// Colorblind-safe palette with high contrast
+// Using distinct hues: orange (active), red (error), blue (info), green (success), gray (neutral)
 const statusStyles: Record<StatusType, StatusStyleConfig> = {
   success: {
-    container: "border-emerald-500/20 bg-emerald-500/12",
+    container: "border-emerald-500/25 bg-emerald-500/15",
     text: "text-emerald-300",
-    dot: "bg-emerald-400",
+    dot: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]",
     label: "Success",
   },
   completed: {
-    container: "border-emerald-500/20 bg-emerald-500/12",
+    container: "border-emerald-500/25 bg-emerald-500/15",
     text: "text-emerald-300",
-    dot: "bg-emerald-400",
+    dot: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]",
     label: "Completed",
   },
   error: {
-    container: "border-rose-500/20 bg-rose-500/12",
-    text: "text-rose-300",
-    dot: "bg-rose-400",
+    container: "border-red-500/25 bg-red-500/15",
+    text: "text-red-300",
+    dot: "bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.6)]",
     label: "Error",
   },
   failed: {
-    container: "border-rose-500/20 bg-rose-500/12",
-    text: "text-rose-300",
-    dot: "bg-rose-400",
+    container: "border-red-500/25 bg-red-500/15",
+    text: "text-red-300",
+    dot: "bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.6)]",
     label: "Failed",
   },
   warning: {
-    container: "border-amber-500/20 bg-amber-500/12",
+    container: "border-amber-500/25 bg-amber-500/15",
     text: "text-amber-300",
-    dot: "bg-amber-400",
+    dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]",
     label: "Warning",
     isActive: true,
   },
   info: {
-    container: "border-sky-500/20 bg-sky-500/12",
-    text: "text-sky-300",
-    dot: "bg-sky-400",
+    container: "border-blue-500/25 bg-blue-500/15",
+    text: "text-blue-300",
+    dot: "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]",
     label: "Info",
   },
   pending: {
-    container: "border-slate-500/20 bg-slate-500/12",
+    container: "border-slate-500/25 bg-slate-500/15",
     text: "text-slate-300",
-    dot: "bg-slate-400",
+    dot: "bg-slate-400 shadow-[0_0_6px_rgba(148,163,184,0.4)]",
     label: "Pending",
   },
   running: {
-    container: "border-cyan-500/20 bg-cyan-500/12",
-    text: "text-cyan-300",
-    dot: "bg-cyan-400",
+    container: "border-orange-500/25 bg-orange-500/15",
+    text: "text-orange-300",
+    dot: "bg-orange-400 shadow-[0_0_10px_rgba(251,146,60,0.6)]",
     label: "Running",
     isActive: true,
   },
@@ -100,7 +102,7 @@ const sizeStyles: Record<
 };
 
 const pulseTransition = {
-  duration: 1.8,
+  duration: 1.4,
   repeat: Infinity,
   ease: "easeInOut" as const,
 };
@@ -140,16 +142,16 @@ const StatusChip: React.FC<StatusChipProps> = ({
           {showPulse && (
             <motion.span
               className={cn(
-                "absolute inset-0 rounded-full opacity-60",
-                config.dot,
+                "absolute inset-0 rounded-full opacity-50",
+                config.dot.split(" ")[0], // Only take bg- class
               )}
-              animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+              animate={{ scale: [1, 2.0, 1], opacity: [0.5, 0, 0.5] }}
               transition={pulseTransition}
             />
           )}
           <span
             className={cn(
-              "relative inline-flex rounded-full shadow-[0_0_0_1px_rgba(15,23,42,0.45)]",
+              "relative inline-flex rounded-full ring-1 ring-white/10",
               currentSize.dot,
               config.dot,
             )}

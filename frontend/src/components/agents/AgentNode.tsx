@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { Agent } from "./types";
 import AgentStatusRing from "./AgentStatusRing";
@@ -12,6 +12,15 @@ import {
 } from "../../lib/animations";
 import { cn } from "../../lib/utils";
 import { detectAgentSource, getSourceInfo } from "../../lib/sourceDetection";
+
+const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
+const isAgentStale = (lastSeenAt: Date | string | undefined): boolean => {
+  if (!lastSeenAt) return false;
+  const lastSeen =
+    typeof lastSeenAt === "string" ? new Date(lastSeenAt) : lastSeenAt;
+  return Date.now() - lastSeen.getTime() > STALE_THRESHOLD_MS;
+};
 
 interface AgentNodeProps {
   agent: Agent;
@@ -41,15 +50,19 @@ const AgentNode: React.FC<AgentNodeProps> = ({
   agent,
   isSelected = false,
   onClick,
-  size = 64,
+  size = 48,
   className = "",
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
   const buttonSize = Math.max(size, 44);
-  const avatarSize = buttonSize - 12;
+  const avatarSize = buttonSize - 8;
+  const isStale = useMemo(
+    () => isAgentStale(agent.lastSeenAt),
+    [agent.lastSeenAt],
+  );
   const isWorking = agent.status === "busy" || agent.status === "communicating";
-  const showPulseGlow = agent.status === "busy";
+  const showPulseGlow = agent.status === "busy" && !isStale;
   const bgColor = roleColors[agent.role] || "bg-gray-600";
   const source = detectAgentSource(agent);
   const sourceInfo = getSourceInfo(source);
@@ -59,6 +72,7 @@ const AgentNode: React.FC<AgentNodeProps> = ({
       type="button"
       className={cn(
         "relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-none bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+        isStale && "opacity-50",
         className,
       )}
       style={{ width: buttonSize, height: buttonSize }}
@@ -72,7 +86,7 @@ const AgentNode: React.FC<AgentNodeProps> = ({
       variants={shouldReduceMotion ? undefined : scaleIn}
       whileHover={shouldReduceMotion ? undefined : hoverScale}
       whileTap={shouldReduceMotion ? undefined : tapScale}
-      aria-label={`${agent.name}, ${agent.role}, ${agent.status}`}
+      aria-label={`${agent.name}, ${agent.role}, ${agent.status}${isStale ? ", stale" : ""}`}
       aria-pressed={isSelected}
     >
       <motion.span
@@ -101,7 +115,9 @@ const AgentNode: React.FC<AgentNodeProps> = ({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className={`flex h-full w-full items-center justify-center ${bgColor}`}>
+          <div
+            className={`flex h-full w-full items-center justify-center ${bgColor}`}
+          >
             <span className="text-sm font-semibold text-white">
               {getInitials(agent.name)}
             </span>
@@ -111,20 +127,45 @@ const AgentNode: React.FC<AgentNodeProps> = ({
 
       <span
         className={cn(
-          "absolute right-1 top-1 h-2.5 w-2.5 rounded-full border border-slate-900",
+          "absolute right-0 top-0 h-2 w-2 rounded-full border border-slate-900",
           sourceInfo.bgColor,
         )}
         aria-hidden="true"
       />
       <span className="sr-only">Source: {sourceInfo.label}</span>
 
+      {/* Stale badge indicator */}
+      <AnimatePresence>
+        {isStale && (
+          <motion.div
+            className="absolute -left-1 top-0 flex h-4 items-center justify-center rounded-full bg-gray-700 px-1.5"
+            initial={
+              shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8 }
+            }
+            animate={{ opacity: 1, scale: 1 }}
+            exit={
+              shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }
+            }
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          >
+            <span className="text-[8px] font-semibold uppercase tracking-wide text-gray-400">
+              Stale
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isSelected && (
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-white"
-            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8 }}
+            className="absolute inset-0 rounded-full border border-white/80"
+            initial={
+              shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8 }
+            }
             animate={{ opacity: 1, scale: 1 }}
-            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+            exit={
+              shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }
+            }
             transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
           />
         )}
@@ -133,8 +174,10 @@ const AgentNode: React.FC<AgentNodeProps> = ({
       <AnimatePresence>
         {isWorking && (
           <motion.div
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-gray-800 px-2 py-1"
-            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-full bg-gray-800/80 px-1.5 py-0.5"
+            initial={
+              shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }
+            }
             animate={{ opacity: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -2 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.15 }}
@@ -155,18 +198,24 @@ const AgentNode: React.FC<AgentNodeProps> = ({
             variants={shouldReduceMotion ? undefined : fadeInUp}
             transition={{ duration: shouldReduceMotion ? 0 : 0.15 }}
           >
-            <div className="relative min-w-[120px] rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 shadow-lg">
-              <div className="whitespace-nowrap text-fluid-sm font-medium tracking-tight text-gray-100">
+            <div className="relative min-w-[100px] rounded-md border border-gray-700/50 bg-gray-900/95 px-2 py-1.5">
+              <div className="whitespace-nowrap text-xs font-medium text-gray-100">
                 {agent.name}
+                {isStale && (
+                  <span className="ml-1.5 text-[9px] uppercase text-gray-500">
+                    (Stale)
+                  </span>
+                )}
               </div>
-              <div className="text-xs capitalize text-gray-400">{agent.role}</div>
+              <div className="text-[10px] capitalize text-gray-400">
+                {agent.role}
+              </div>
               {agent.currentTask && (
-                <div className="mt-1 border-t border-gray-700 pt-1">
-                  <div className="text-xs text-gray-500">Current task:</div>
-                  <div className="max-w-[150px] truncate text-xs text-gray-300">
+                <div className="mt-1 border-t border-gray-700/50 pt-1">
+                  <div className="max-w-[120px] truncate text-[10px] text-gray-300">
                     {agent.currentTask.title}
                   </div>
-                  <div className="mt-1 h-1 overflow-hidden rounded-full bg-gray-700">
+                  <div className="mt-0.5 h-0.5 overflow-hidden rounded-full bg-gray-700">
                     <div
                       className="h-full bg-emerald-500 transition-all duration-300"
                       style={{ width: `${agent.currentTask.progress}%` }}
@@ -174,13 +223,13 @@ const AgentNode: React.FC<AgentNodeProps> = ({
                   </div>
                 </div>
               )}
-              <div className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-gray-700 bg-gray-900" />
+              <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-gray-700/50 bg-gray-900/95" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-fluid-xs font-medium tracking-tight text-gray-400">
+      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-gray-500">
         {agent.name}
       </div>
     </motion.button>

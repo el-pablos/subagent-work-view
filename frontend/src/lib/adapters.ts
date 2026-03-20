@@ -1,4 +1,7 @@
-import type { AgentConnection, Agent as UIAgent } from "../components/agents/types";
+import type {
+  AgentConnection,
+  Agent as UIAgent,
+} from "../components/agents/types";
 import type {
   Message as UIMessage,
   MessageType as UIMessageType,
@@ -10,6 +13,7 @@ import type {
   Task as APITask,
   TaskLog as APITaskLog,
 } from "../types";
+import { detectAgentSource } from "./sourceDetection";
 
 const AGENT_ROLE_MAP: Record<APIAgent["type"], UIAgent["role"]> = {
   planner: "planner",
@@ -66,7 +70,10 @@ function getTaskTimestamp(task: APITask): string {
   );
 }
 
-function toDurationSeconds(start?: string | null, end?: string | null): number | undefined {
+function toDurationSeconds(
+  start?: string | null,
+  end?: string | null,
+): number | undefined {
   if (!start || !end) return undefined;
 
   const durationMs = new Date(end).getTime() - new Date(start).getTime();
@@ -79,10 +86,14 @@ function normalizeMessageType(type: APIMessage["message_type"]): UIMessageType {
   return MESSAGE_TYPE_MAP[type] ?? "system";
 }
 
-export function mapApiAgentToUI(agent: APIAgent, tasks: APITask[] = []): UIAgent {
+export function mapApiAgentToUI(
+  agent: APIAgent,
+  tasks: APITask[] = [],
+): UIAgent {
   const currentTask = tasks
     .filter((task) => {
-      const assignedAgentId = task.assigned_agent_id ?? getAssignedAgent(task)?.id;
+      const assignedAgentId =
+        task.assigned_agent_id ?? getAssignedAgent(task)?.id;
       return assignedAgentId === agent.id;
     })
     .sort(
@@ -98,6 +109,7 @@ export function mapApiAgentToUI(agent: APIAgent, tasks: APITask[] = []): UIAgent
     role: AGENT_ROLE_MAP[agent.type] ?? "worker",
     status: AGENT_STATUS_MAP[agent.status] ?? "idle",
     avatar: agent.avatar ?? undefined,
+    source: detectAgentSource(agent),
     currentTask: currentTask
       ? {
           id: String(currentTask.id),
@@ -117,7 +129,11 @@ export function mapApiAgentToUI(agent: APIAgent, tasks: APITask[] = []): UIAgent
 export function mapApiTaskToUI(task: APITask): UITask {
   const assignedAgent = getAssignedAgent(task);
   const createdAt =
-    task.created_at ?? task.queued_at ?? task.started_at ?? task.finished_at ?? new Date().toISOString();
+    task.created_at ??
+    task.queued_at ??
+    task.started_at ??
+    task.finished_at ??
+    new Date().toISOString();
   const updatedAt = getTaskTimestamp(task);
   const completedAt = task.finished_at ?? undefined;
 
@@ -158,7 +174,8 @@ export function mapApiMessageToUI(message: APIMessage): UIMessage {
         : "general",
     type: normalizeMessageType(message.message_type),
     content: message.content,
-    timestamp: message.timestamp ?? message.created_at ?? new Date().toISOString(),
+    timestamp:
+      message.timestamp ?? message.created_at ?? new Date().toISOString(),
     sender: sender
       ? {
           id: String(sender.id),
@@ -201,7 +218,8 @@ function mapTaskLogType(action: string): TaskHistoryEvent["type"] {
 
 export function mapApiTaskLogToUIEvent(log: APITaskLog): TaskHistoryEvent {
   const details = log.meta ?? log.details ?? {};
-  const rawStatus = typeof details.status === "string" ? details.status : undefined;
+  const rawStatus =
+    typeof details.status === "string" ? details.status : undefined;
   const status =
     rawStatus === "pending" ||
     rawStatus === "running" ||
@@ -216,7 +234,8 @@ export function mapApiTaskLogToUIEvent(log: APITaskLog): TaskHistoryEvent {
     type: mapTaskLogType(log.action),
     timestamp: log.timestamp,
     data: {
-      progress: typeof details.progress === "number" ? details.progress : undefined,
+      progress:
+        typeof details.progress === "number" ? details.progress : undefined,
       status,
       agent: log.agent
         ? {
@@ -250,7 +269,11 @@ export function buildFallbackTaskHistory(tasks: APITask[]): TaskHistoryEvent[] {
         id: `task-${task.id}-assigned`,
         taskId: String(task.id),
         type: "assigned",
-        timestamp: task.started_at ?? task.updated_at ?? createdAt ?? new Date().toISOString(),
+        timestamp:
+          task.started_at ??
+          task.updated_at ??
+          createdAt ??
+          new Date().toISOString(),
         data: {
           agent: {
             id: String(assignedAgent.id),
@@ -274,7 +297,11 @@ export function buildFallbackTaskHistory(tasks: APITask[]): TaskHistoryEvent[] {
         id: `task-${task.id}-progress`,
         taskId: String(task.id),
         type: "progress",
-        timestamp: task.updated_at ?? task.started_at ?? createdAt ?? new Date().toISOString(),
+        timestamp:
+          task.updated_at ??
+          task.started_at ??
+          createdAt ??
+          new Date().toISOString(),
         data: {
           progress: task.progress,
         },
@@ -290,7 +317,10 @@ export function buildFallbackTaskHistory(tasks: APITask[]): TaskHistoryEvent[] {
       });
     }
 
-    if ((task.status === "failed" || task.status === "cancelled") && task.finished_at) {
+    if (
+      (task.status === "failed" || task.status === "cancelled") &&
+      task.finished_at
+    ) {
       events.push({
         id: `task-${task.id}-failed`,
         taskId: String(task.id),
@@ -301,11 +331,14 @@ export function buildFallbackTaskHistory(tasks: APITask[]): TaskHistoryEvent[] {
   });
 
   return events.sort(
-    (left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime(),
+    (left, right) =>
+      new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime(),
   );
 }
 
-export function buildAgentConnections(messages: UIMessage[]): AgentConnection[] {
+export function buildAgentConnections(
+  messages: UIMessage[],
+): AgentConnection[] {
   const connectionMap = new Map<string, AgentConnection>();
   const activeThreshold = Date.now() - 5 * 60 * 1000;
 

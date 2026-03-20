@@ -35,6 +35,8 @@ export interface WarRoomLayoutProps {
   onMessageSubscribe?: (sessionId: string) => () => void;
   onSearch?: (query: string) => void;
   onSessionChange?: (sessionId: string) => void;
+  onRefresh?: () => Promise<void>;
+  isRefreshing?: boolean;
 }
 
 type ActivePanel = "topology" | "tasks" | "comms";
@@ -66,6 +68,8 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
   onMessageSubscribe,
   onSearch,
   onSessionChange,
+  onRefresh,
+  isRefreshing,
 }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
   const [activePanel, setActivePanel] = useState<ActivePanel>("topology");
@@ -93,7 +97,10 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
   };
 
   const timelinePanel = (
-    <section aria-label="Task Timeline" className="flex h-full min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-900">
+    <section
+      aria-label="Task Timeline"
+      className="flex h-full min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-900"
+    >
       <div className="flex items-center justify-between border-b border-gray-800 px-3 py-2.5 sm:px-4 sm:py-3">
         <h2 className="text-sm font-semibold text-gray-100">
           Task Timeline
@@ -116,7 +123,10 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
   );
 
   const consolePanel = (
-    <section aria-label="Command Console" className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+    <section
+      aria-label="Command Console"
+      className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-gray-800 bg-gray-900"
+    >
       <div className="border-b border-gray-800 px-3 py-2.5 sm:px-4 sm:py-3">
         <h2 className="text-sm font-semibold text-gray-100">Command Console</h2>
       </div>
@@ -141,11 +151,17 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
         activeAgentCount={agents.length}
         runningTaskCount={runningTaskCount}
         onSessionChange={onSessionChange}
+        onRefresh={onRefresh}
+        isRefreshing={isRefreshing}
       />
 
       <HeaderCommandBar onSearch={onSearch} />
 
-      <main role="main" aria-label="Dashboard content" className="flex-1 overflow-hidden pb-24 lg:pb-0">
+      <main
+        role="main"
+        aria-label="Dashboard content"
+        className="flex-1 overflow-hidden pb-24 lg:pb-0"
+      >
         <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:grid md:grid-cols-2 md:gap-4 md:p-4 lg:grid-cols-12 2xl:grid-cols-14 2xl:gap-5 3xl:px-6 4xl:px-8">
           <section
             aria-labelledby="topology-panel-heading"
@@ -242,7 +258,10 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
         </div>
       </main>
 
-      <footer aria-label="Task history and console" className="hidden border-t border-slate-800 bg-slate-900 md:block">
+      <footer
+        aria-label="Task history and console"
+        className="hidden border-t border-slate-800 bg-slate-900 md:block"
+      >
         <div className="grid grid-cols-2 gap-4 p-4 lg:grid-cols-12 2xl:grid-cols-14 2xl:gap-5 3xl:px-6 4xl:px-8">
           <div className="col-span-1 min-h-0 lg:col-span-8 2xl:col-span-9">
             {timelinePanel}
@@ -253,7 +272,10 @@ const WarRoomLayout: React.FC<WarRoomLayoutProps> = ({
         </div>
       </footer>
 
-      <nav aria-label="Mobile panel navigation" className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl pb-safe lg:hidden">
+      <nav
+        aria-label="Mobile panel navigation"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl pb-safe lg:hidden"
+      >
         <div className="flex h-16 items-center justify-around px-2">
           {MOBILE_PANEL_TABS.map((tab) => {
             const Icon = tab.icon;
