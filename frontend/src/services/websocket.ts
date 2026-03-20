@@ -21,6 +21,8 @@ const echo = new Echo({
   encrypted: false,
   disableStats: true,
   enabledTransports: ["ws", "wss"],
+  activityTimeout: 120000,
+  pongTimeout: 30000,
 });
 
 window.Echo = echo;
@@ -34,6 +36,31 @@ export type ConnectionState =
 let connectionState: ConnectionState = "connecting";
 const connectionListeners: Set<(state: ConnectionState) => void> = new Set();
 
+// Auto-reconnect configuration
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 10;
+const BASE_RECONNECT_DELAY = 1000;
+const MAX_RECONNECT_DELAY = 30000;
+
+function scheduleReconnect(): void {
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    connectionState = "failed";
+    notifyConnectionListeners();
+    return;
+  }
+  const delay = Math.min(
+    BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts),
+    MAX_RECONNECT_DELAY,
+  );
+  console.log(
+    `[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1})`,
+  );
+  setTimeout(() => {
+    reconnectAttempts++;
+    echo.connector.pusher.connect();
+  }, delay);
+}
+
 function notifyConnectionListeners() {
   connectionListeners.forEach((listener) => listener(connectionState));
 }
@@ -41,6 +68,7 @@ function notifyConnectionListeners() {
 const pusherConnection = echo.connector.pusher.connection;
 
 pusherConnection.bind("connected", () => {
+  reconnectAttempts = 0;
   connectionState = "connected";
   notifyConnectionListeners();
 });
@@ -48,6 +76,7 @@ pusherConnection.bind("connected", () => {
 pusherConnection.bind("disconnected", () => {
   connectionState = "disconnected";
   notifyConnectionListeners();
+  scheduleReconnect();
 });
 
 pusherConnection.bind("failed", () => {
