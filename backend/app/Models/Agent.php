@@ -62,13 +62,12 @@ class Agent extends Model
     public function latestTask(): HasOne
     {
         return $this->hasOne(Task::class, 'assigned_agent_id')
-            ->ofMany('created_at', 'max', function (Builder $query) {
-                $query->whereIn('status', [
-                    TaskStatus::ASSIGNED,
-                    TaskStatus::RUNNING,
-                    TaskStatus::BLOCKED,
-                ]);
-            });
+            ->whereIn('status', [
+                TaskStatus::ASSIGNED,
+                TaskStatus::RUNNING,
+                TaskStatus::BLOCKED,
+            ])
+            ->latestOfMany('created_at');
     }
 
     public function sessions(): BelongsToMany
