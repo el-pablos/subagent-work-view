@@ -128,7 +128,7 @@ class Agent extends Model
     {
         return $query->with([
             'latestTask.session',
-            'sessions' => fn (Builder $relationQuery) => $relationQuery
+            'sessions' => fn ($relationQuery) => $relationQuery
                 ->select('sessions.id', 'sessions.uuid', 'sessions.command_source', 'sessions.status')
                 ->orderByDesc('sessions.created_at'),
         ]);
